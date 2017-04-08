@@ -4,6 +4,7 @@ class Logger
   @@logs = []
   @@logging = false
   @@debug = true
+  @@since = DateTime.now
 
   def self.logging
     @@logging
@@ -14,16 +15,24 @@ class Logger
     Thread.new do
       while true do
         sleep(300)
-        unless @@logs.empty?
-          @@logging = true
-          puts "Writing ./logs/#{DateTime.now.strftime("hyena-%d-%m-%Y-%H:%M:%S")}.log"
-          file = File.new("./logs/#{DateTime.now.strftime("hyena-%d-%m-%Y-%H:%M:%S")}.log", "w")
-          file.syswrite("#{@@logs.join("\n")}")
-          file.close
-          @@logs = []
-          @@logging = false
-        end
+        self.save
       end
+    end
+  end
+
+  def self.save
+    unless @@logs.empty? or @@logging
+      @@logging = true
+      filename = DateTime.now.strftime("hyena-%d-%m-%Y-%H-%M-%S.log")
+      puts "Writing ./logs/#{filename}"
+      file = File.new("./logs/#{filename}", "w")
+      from = @@since.strftime("%d-%m-%Y-%H:%M:%S")
+      to = DateTime.now.strftime("%d-%m-%Y-%H:%M:%S")
+      file.syswrite("This log covers the time from #{from} to #{to}\n#{@@logs.join("\n")}")
+      file.close
+      @@logs = []
+      @@since = DateTime.now
+      @@logging = false
     end
   end
 

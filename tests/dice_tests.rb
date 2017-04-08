@@ -1,5 +1,5 @@
 require 'test/unit'
-require '../dice.rb'
+require_relative '../dice.rb'
 
 class TestDice < Test::Unit::TestCase
 
