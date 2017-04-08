@@ -63,4 +63,8 @@ class CombatManager
     combatants = hash["combatants"].map { |combatant_hash| Combatant.from_hash(combatant_hash) }
     CombatManager.new hash["name"], combatants
   end
+
+  def json_filename
+    "#{name}.json"
+  end
 end

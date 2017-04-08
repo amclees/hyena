@@ -17,6 +17,10 @@ class Combatant
     @last_roll = Dice.d20.to_f + @initiative.to_f + (Dice.dx(1, 100).to_f / 100.0).round(2)
   end
 
+  def json_filename
+    "#{name}.json"
+  end
+
   def self.from_json(json)
     hash = JSON.parse(json)
     Combatant.new hash["name"], hash["initiative"]
