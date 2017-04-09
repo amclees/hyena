@@ -2,15 +2,16 @@ require 'json'
 require_relative '../dice.rb'
 
 class CombatManager
-  attr_reader :combatants, :round, :name, :id
+  attr_accessor :combatants, :round, :name, :id
   @@pool = 0
 
-  def initialize(name, combatants)
+  def initialize(name, combatants, user_id)
     @name = name
     @combatants = combatants
     @round = 0
     @id = @@pool
     @@pool += 1
+    @user_id = user_id
   end
 
   def next_round
@@ -34,7 +35,7 @@ class CombatManager
   # Returns a string representing the current state
   def state_s
     combatants_strings = @combatants.map { |combatant| combatant.to_s }
-    "Round #{@round}\n#{combatants_strings.join("\n")}"
+    "Round #{@round} of #{@name}\n#{combatants_strings.join("\n")}"
   end
 
   def self.get_turn_ordered(combatants)
@@ -50,7 +51,8 @@ class CombatManager
   def to_hash
     {
       :name => @name,
-      :combatants => @combatants.map { |combatant| combatant.to_hash }
+      :combatants => @combatants.map { |combatant| combatant.to_hash },
+      :user_id => @user_id
     }
   end
 
@@ -61,10 +63,10 @@ class CombatManager
   def self.from_json(json)
     hash = JSON.parse(json)
     combatants = hash["combatants"].map { |combatant_hash| Combatant.from_hash(combatant_hash) }
-    CombatManager.new hash["name"], combatants
+    CombatManager.new hash["name"], combatants, hash["user_id"]
   end
 
   def json_filename
-    "#{name}.json"
+    "#{@user_id}_#{@name}.json"
   end
 end

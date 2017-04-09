@@ -11,7 +11,7 @@ class TestPersistance < Test::Unit::TestCase
   def test_combat_storage
     c1 = Combatant.new "Elf", 2
     c2 = Combatant.new "Best Tester", 25
-    combat_manager = CombatManager.new "Test", [c1, c2]
+    combat_manager = CombatManager.new "Test", [c1, c2], 0
 
     JSONManager.write_json("combatants", c1.json_filename, c1.to_json)
     JSONManager.write_json("combatants", c2.json_filename, c2.to_json)

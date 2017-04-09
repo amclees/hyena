@@ -3,9 +3,11 @@ require_relative './json_manager.rb'
 require_relative './hyena_secret.rb'
 require_relative './dice.rb'
 require_relative './logger.rb'
+require_relative './combat/combat_manager.rb'
+require_relative './combat/combatant.rb'
 
 Logger.log("Starting up")
-bot = Discordrb::Commands::CommandBot.new token: HyenaSecret.bot_token, client_id: HyenaSecret.client_id, prefix: "hyena "
+bot = Discordrb::Commands::CommandBot.new token: HyenaSecret.bot_token, client_id: HyenaSecret.client_id, prefix: "."
 Logger.log("Created bot")
 
 JSONManager.init("data")
@@ -37,13 +39,115 @@ bot.message do |msg|
   Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) said #{msg.content}")
 end
 
-bot.command(:exit, chain_usable: false, help_available: false, permission_level: 100) do |msg|
+bot.command(:exit, help_available: false, permission_level: 100) do |msg|
   Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued command to exit.")
-  bot.send_message(channel_general, "Leaving now.")
-  Logger.log("Send exit message")
+  msg.respond("Saving and exiting...")
+  Logger.log("Sent exit message")
   sleep(0.1) until not Logger.logging
   Logger.save
+  msg.respond("Done saving, exiting now.")
   exit
+end
+
+scenario_hash = {}
+bot.command(:combat, description: "Allows access to combat functions (Try `#{bot.prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2|
+  Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued combat command.")
+  user_id = msg.author.id
+  if action == "help"
+    msg.respond(
+%(The `combat` commands allows you to create and save combat scenarios for easy initiative handling. Valid names consist of letters, numbers, and underscores. It can be used as follows:
+`new <name>` - Start a new combat scenario with the specified name, saving and leaving your old one.
+`rename <new name>` - Rename the current combat scenario
+`open <name>` - Open the combat scenario with the specified name
+`delete <name>` - Permanently delete one of your combat scenarios
+`scenarios` - View a list of all your saved scenarios
+`close` - Closes and saves the current combat scenario
+`add <name> <initiative> [\# of duplicates (default 1)]` - Adds characters to your scenario
+`edit <id> <new name> <new initiative>` - Assigns the specified name and initiative to an existing combatant
+`remove <id>` - Removes the specified combatant from combat
+`run` - Proceed your combat scenario to the next round and display turn order
+`status` - Print the name and current status of your combat scenario)
+    )
+    Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) listed combat command options.")
+  elsif action == "new"
+    if arg1 =~ /\A\w+\z/
+      old_manager = scenario_hash[user_id]
+      JSONManager.write_json("scenarios", old_manager.json_filename, old_manager.to_json) if old_manager
+      new_manager = CombatManager.new arg1, [], user_id
+      scenario_hash[user_id] = new_manager
+      msg.respond("Successfully created new scenario called: #{arg1}")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) created new combat scenario called: #{arg1}")
+      JSONManager.write_json("scenarios", new_manager.json_filename, new_manager.to_json)
+    else
+      msg.respond("#{msg.author.display_name}, \"#{arg1}\" is not a valid name.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted and failed to created an improperly named new combat scenario called: #{arg1}")
+    end
+  elsif action == "rename"
+    manager = scenario_hash[user_id]
+    if !manager
+      msg.respond("#{msg.author.display_name}, you do not have a combat scenario open.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to rename their nonexistant combat scenario.")
+    elsif arg1 =~ /\A\w+\z/
+      JSONManager.delete_json("scenarios", manager.json_filename)
+      manager.name = arg1
+      msg.respond("Successfully renamed scenario to: #{arg1}")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) renamed their combat scenario called: #{arg1}")
+      JSONManager.write_json("scenarios", manager.json_filename, manager.to_json)
+    else
+      msg.respond("#{msg.author.display_name}, \"#{arg1}\" is not a valid name.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted and failed to rename their active combat scenario to the invalid name: #{arg1}")
+    end
+  elsif action == "open"
+    if arg1 =~ /\A\w+\z/ and JSONManager.exist?("scenarios", "#{user_id}_#{arg1}.json")
+      old_manager = scenario_hash[user_id]
+      JSONManager.write_json("scenarios", old_manager.json_filename, old_manager.to_json) if old_manager
+      scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json("scenarios", "#{user_id}_#{arg1}.json"))
+      msg.respond("#{msg.author.display_name}, you have saved your old scenario and opened #{arg1}.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) opened the scenario #{arg1}.")
+    else
+      msg.respond("#{msg.author.display_name}, \"#{arg1}\" is not a valid scenario.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to open a nonexistant scenario.")
+    end
+  elsif action == "scenarios"
+    file_regex = /\A#{user_id}_(\w+).json\z/
+    names = JSONManager.search("scenarios", file_regex)
+    msg.respond("#{msg.author.display_name} has the following scenarios:```diff\n#{names.join("\n")}```")
+    Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) listed their scenarios.")
+  elsif action == "close"
+    manager = scenario_hash[user_id]
+    if manager
+      JSONManager.write_json("scenarios", manager.json_filename, manager.to_json)
+      msg.respond("#{msg.author.display_name}, you have saved and closed your scenario #{manager.name}")
+      Logger.log("#{msg.author.display_name} closed their scenario #{manager.name}")
+      scenario_hash[user_id] = nil
+    else
+      msg.respond("#{msg.author.display_name}, you did not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to close their scenario but had none open.")
+    end
+  elsif action == "run"
+    manager = scenario_hash[user_id]
+    if manager
+      manager.next_round
+      msg.respond(manager.state_s)
+      Logger.log("#{msg.author.display_name} ran their scenario #{manager.name}")
+    else
+      msg.respond("#{msg.author.display_name}, you do not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to run their scenario but had none open.")
+    end
+  elsif action == "status"
+    manager = scenario_hash[user_id]
+    if manager
+      msg.respond(manager.state_s)
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) displayed the current state of their combat scenario: #{manager.name}")
+    else
+      msg.respond("You do not have and active combat scenario, #{msg.author.display_name}.")
+      Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) tried to view the state of their combat scenario, but had none.")
+    end
+  else
+    msg.respond("#{msg.author.display_name}, that is not a valid action.")
+    Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to call the undefined combat action: combat #{action}")
+  end
+  nil
 end
 
 bot.run :async

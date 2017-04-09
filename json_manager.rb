@@ -20,12 +20,48 @@ module JSONManager
     json = nil
     Dir.chdir(@@json_folder) do
       Dir.chdir(subfolder) do
-        File.open(filename, "r").each_line do |line|
-          json = line
-          break
+        File.open(filename, "r") do |file|
+          file.each_line do |line|
+            json = line
+          end
         end
       end
     end
     json
   end
+
+  def self.search(subfolder, regex)
+    matched = []
+    Dir.entries("./#{@@json_folder}/#{subfolder}").each do |filename|
+      match_data = regex.match(filename)
+      matched.push(match_data.captures[0]) if match_data
+    end
+    matched
+  end
+
+  def self.exist?(subfolder, filename)
+    exists = nil
+    Dir.chdir(@@json_folder) do
+      Dir.chdir(subfolder) do
+        exists = File.exist?(filename)
+      end
+    end
+    exists
+  end
+
+  def self.delete_json(subfolder, filename)
+    json = nil
+    Dir.chdir(@@json_folder) do
+      Dir.chdir(subfolder) do
+        File.open(filename, "r") do |file|
+          file.each_line do |line|
+            json = line
+          end
+        end
+        File.delete(filename)
+      end
+    end
+    json
+  end
+
 end

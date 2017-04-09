@@ -78,7 +78,7 @@ class CombatManagerTest < Test::Unit::TestCase
     puts
     c1 = Combatant.new "Elf", 2
     c2 = Combatant.new "Best Tester", 25
-    combat_manager = CombatManager.new "Test", [c1, c2]
+    combat_manager = CombatManager.new "Test", [c1, c2], 0
     combat_manager.next_round
     puts combat_manager.state_s
     assert_equal(1, combat_manager.round)
