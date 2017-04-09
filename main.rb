@@ -11,6 +11,7 @@ bot = Discordrb::Commands::CommandBot.new token: HyenaSecret.bot_token, client_i
 Logger.log("Created bot")
 
 JSONManager.init("data")
+scenario_hash = {}
 
 puts "Invite URL is #{bot.invite_url}."
 
@@ -43,14 +44,18 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
   Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued command to exit.")
   msg.respond("Saving and exiting...")
   Logger.log("Sent exit message")
+  scenario_hash.keys.each do |key|
+    combat_manager = scenario_hash[key]
+    JSONManager.write_json("scenarios", combat_manager.json_filename, combat_manager.to_json)
+    Logger.log("Saved scenario #{combat_manager.name} owned by UID #{combat_manager.user_id}")
+  end
   sleep(0.1) until not Logger.logging
   Logger.save
   msg.respond("Done saving, exiting now.")
   exit
 end
 
-scenario_hash = {}
-bot.command(:combat, description: "Allows access to combat functions (Try `#{bot.prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2|
+bot.command(:combat, description: "Allows access to combat functions (Try `#{bot.prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2, arg3|
   Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued combat command.")
   user_id = msg.author.id
   if action == "help"
@@ -59,7 +64,7 @@ bot.command(:combat, description: "Allows access to combat functions (Try `#{bot
 `new <name>` - Start a new combat scenario with the specified name, saving and leaving your old one.
 `rename <new name>` - Rename the current combat scenario
 `open <name>` - Open the combat scenario with the specified name
-`delete <name>` - Permanently delete one of your combat scenarios
+`delete` - Permanently delete your active scenario
 `scenarios` - View a list of all your saved scenarios
 `close` - Closes and saves the current combat scenario
 `add <name> <initiative> [\# of duplicates (default 1)]` - Adds characters to your scenario
@@ -102,11 +107,23 @@ bot.command(:combat, description: "Allows access to combat functions (Try `#{bot
       old_manager = scenario_hash[user_id]
       JSONManager.write_json("scenarios", old_manager.json_filename, old_manager.to_json) if old_manager
       scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json("scenarios", "#{user_id}_#{arg1}.json"))
-      msg.respond("#{msg.author.display_name}, you have saved your old scenario and opened #{arg1}.")
+      msg.respond("#{msg.author.display_name}, you have opened #{arg1}.")
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) opened the scenario #{arg1}.")
     else
       msg.respond("#{msg.author.display_name}, \"#{arg1}\" is not a valid scenario.")
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to open a nonexistant scenario.")
+    end
+  elsif action == "delete"
+    manager = scenario_hash[user_id]
+    if manager
+      JSONManager.delete_json("scenarios", manager.json_filename)
+      JSONManager.write_json("scenarios", "deleted_" + manager.json_filename, manager.to_json)
+      msg.respond("#{msg.author.display_name}, you deleted your scenario #{manager.name}")
+      Logger.log("#{msg.author.display_name} deleted their scenario #{manager.name}")
+      scenario_hash[user_id] = nil
+    else
+      msg.respond("#{msg.author.display_name}, you did not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to close their scenario but had none open.")
     end
   elsif action == "scenarios"
     file_regex = /\A#{user_id}_(\w+).json\z/
@@ -124,6 +141,71 @@ bot.command(:combat, description: "Allows access to combat functions (Try `#{bot
       msg.respond("#{msg.author.display_name}, you did not have a scenario open.")
       Logger.log("#{msg.author.display_name} attempted to close their scenario but had none open.")
     end
+  elsif action == "add"
+    manager = scenario_hash[user_id]
+    if manager
+      if arg1 =~ /\A\w+\z/ && arg2 =~ /\A-?\d+\z/
+        amount = 1
+        if arg3 =~ /\A\d+\z/
+          amount = arg3.to_i unless amount > 25
+        end
+        for i in (0...amount)
+          manager.combatants.push(Combatant.new arg1, arg2.to_i)
+        end
+        msg.respond("#{msg.author.display_name}, your combatants have been added.")
+        Logger.log("#{msg.author.display_name} added combatants to their scenario.")
+      else
+        msg.respond("#{msg.author.display_name}, those are not valid names.")
+        Logger.log("#{msg.author.display_name} attempted to add a combatant to their scenario but gave invalid arguments.")
+      end
+    else
+      msg.respond("#{msg.author.display_name}, you do not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to add a combatant to their scenario but had none open.")
+    end
+  elsif action == "edit"
+    manager = scenario_hash[user_id]
+    if manager
+      if arg1 =~ /\A\d+\z/ && arg2 =~ /\A\w+\z/ && arg3 =~ /\A-?\d+\z/
+        id = arg1.to_i
+        popped = manager.pop_combatant(id)
+        if popped
+          popped.name = arg2
+          popped.initiative = arg3.to_i
+          manager.combatants.push(popped)
+          msg.respond("#{msg.author.display_name}, your modifications have been made.")
+          Logger.log("#{msg.author.display_name} modified combatants in their scenario.")
+        else
+          msg.respond("#{msg.author.display_name}, your modifications have not been made; there are no combatants in the scenario with that id.")
+          Logger.log("#{msg.author.display_name} gave an id not possessed by combatants in their scenario.")
+        end
+      else
+        msg.respond("#{msg.author.display_name}, those are not valid input.")
+        Logger.log("#{msg.author.display_name} attempted to modify a combatant in their scenario but gave invalid arguments.")
+      end
+    else
+      msg.respond("#{msg.author.display_name}, you do not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to modify a combatant in their scenario but had none open.")
+    end
+  elsif action == "remove"
+    manager = scenario_hash[user_id]
+    if manager
+      if arg1 =~ /\A\d+\z/
+        id = arg1.to_i
+        if manager.pop_combatant(id)
+          msg.respond("#{msg.author.display_name}, your deletion has been made.")
+          Logger.log("#{msg.author.display_name} deleted a combatant in their scenario.")
+        else
+          msg.respond("#{msg.author.display_name}, your modifications have not been made; there are no combatants in the scenario with that id.")
+          Logger.log("#{msg.author.display_name} gave an id not possessed by combatants in their scenario.")
+        end
+      else
+        msg.respond("#{msg.author.display_name}, those are not valid input.")
+        Logger.log("#{msg.author.display_name} attempted to delete a combatant in their scenario but gave an invalid id.")
+      end
+    else
+      msg.respond("#{msg.author.display_name}, you do not have a scenario open.")
+      Logger.log("#{msg.author.display_name} attempted to delete a combatant in their scenario but had none open.")
+    end
   elsif action == "run"
     manager = scenario_hash[user_id]
     if manager
@@ -140,7 +222,7 @@ bot.command(:combat, description: "Allows access to combat functions (Try `#{bot
       msg.respond(manager.state_s)
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) displayed the current state of their combat scenario: #{manager.name}")
     else
-      msg.respond("You do not have and active combat scenario, #{msg.author.display_name}.")
+      msg.respond("You do not have an active combat scenario, #{msg.author.display_name}.")
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) tried to view the state of their combat scenario, but had none.")
     end
   else

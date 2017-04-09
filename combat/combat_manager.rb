@@ -3,6 +3,7 @@ require_relative '../dice.rb'
 
 class CombatManager
   attr_accessor :combatants, :round, :name, :id
+  attr_reader :user_id
   @@pool = 0
 
   def initialize(name, combatants, user_id)
