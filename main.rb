@@ -15,6 +15,9 @@ puts "Invite URL is #{bot.invite_url}."
 
 bot.bucket :file_cmd, limit: 3, time_span: 120, delay: 5
 
+server = nil
+channel_general = nil
+
 scenario_hash = {}
 Combat.init(bot.prefix, scenario_hash)
 bot.include! Combat
@@ -54,7 +57,41 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
   sleep(0.1) until not Logger.logging
   Logger.save
   msg.respond("Done saving, exiting now.")
+  bot.invisible # Causes offline to immediately display
   exit
+end
+
+current_game = nil
+bot.command(:playing, help_available: false, permission_level: 100) do |msg, arg1, arg2|
+  if(arg1 == "on")
+    if arg2
+      current_game = arg2
+    else
+      current_game = "D&D"
+    end
+    bot.game = current_game
+    if current_game == "D&D"
+      msg.respond("@everyone Session starting, get in voice!")
+      server.members.each do |member|
+        next if member.bot_account?
+        if member.game
+          msg.respond("#{member.mention} Stop playing #{member.game} and get on here!")
+        end
+      end
+    end
+  else
+    current_game = nil
+    bot.game = nil
+    msg.respond("Session has ended.")
+  end
+  nil
+end
+
+bot.playing do |event|
+  if(current_game == "D&D")
+    bot.send_message(channel_general.id, "#{event.user.mention} Stop playing #{event.game} and get on here!")
+    Logger.log("#{event.user.username} (id: #{event.user.id}) was warned not to play #{event.game}")
+  end
 end
 
 
@@ -62,13 +99,12 @@ end
 bot.run :async
 Logger.log("Bot started")
 
-channel_general = nil
-channel_general = bot.find_channel("general")[0].id unless bot.find_channel("general").empty?
-bot.game = "D&D"
+channel_general = bot.find_channel("general", nil, type: 0)[0] unless bot.find_channel("general").empty?
+server = channel_general.server
 
 bot.set_user_permission(125750053309513728, 100)
 if channel_general
-  bot.send_message(channel_general, "**Hello!** I, the *hyena*, have come to roll dice and do other things. Type `#{bot.prefix}help` to see what I can do for you (other than roll dice).\nType `<number of dice>d<sides>` to roll dice. For example, `1d20`, `4d6`, or `1d100`.")
+  bot.send_message(channel_general.id, "**Hello!** I, the *hyena*, have come to roll dice and do other things. Type `#{bot.prefix}help` to see what I can do for you (other than roll dice).\nType `<number of dice>d<sides>` to roll dice. For example, `1d20`, `4d6`, or `1d100`.")
 end
 bot.sync
 Logger.log("Initialization complete")
