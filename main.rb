@@ -3,7 +3,7 @@ require_relative './json_manager.rb'
 require_relative './hyena_secret.rb'
 require_relative './dice.rb'
 require_relative './logger.rb'
-require_relative './combat/combat_command.rb'
+require_relative './combat/combat_container.rb'
 
 Logger.log("Starting up")
 bot = Discordrb::Commands::CommandBot.new token: HyenaSecret.bot_token, client_id: HyenaSecret.client_id, prefix: "."
@@ -16,7 +16,8 @@ puts "Invite URL is #{bot.invite_url}."
 bot.bucket :file_cmd, limit: 3, time_span: 120, delay: 5
 
 scenario_hash = {}
-register_combat_command(bot, scenario_hash)
+Combat.init(bot.prefix, scenario_hash)
+bot.include! Combat
 
 bot.message(content: /(\d*)d(\d*)/i) do |msg|
   pair = msg.content.scan(/(\d*)d(\d*)/i)[0]

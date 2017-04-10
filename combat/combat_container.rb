@@ -3,8 +3,16 @@ require_relative '../logger.rb'
 require_relative './combat_manager.rb'
 require_relative './combatant.rb'
 
-def register_combat_command(bot, scenario_hash)
-  bot.command(:combat, description: "Allows access to combat functions (Try `#{bot.prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2, arg3|
+module Combat
+  extend Discordrb::Commands::CommandContainer
+
+  @@prefix = ""
+  def self.init(prefix, scenario_hash)
+    @@prefix = prefix
+    @@scenario_hash = scenario_hash
+  end
+
+  command(:combat, description: "Allows access to combat functions (Try `#{@@prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2, arg3|
     Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued combat command.")
     user_id = msg.author.id
     if action == "help"
@@ -25,10 +33,10 @@ def register_combat_command(bot, scenario_hash)
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) listed combat command options.")
     elsif action == "new"
       if arg1 =~ /\A\w+\z/
-        old_manager = scenario_hash[user_id]
+        old_manager = @@scenario_hash[user_id]
         JSONManager.write_json("scenarios", old_manager.json_filename, old_manager.to_json) if old_manager
         new_manager = CombatManager.new arg1, [], user_id
-        scenario_hash[user_id] = new_manager
+        @@scenario_hash[user_id] = new_manager
         msg.respond("Successfully created new scenario called: #{arg1}")
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) created new combat scenario called: #{arg1}")
         JSONManager.write_json("scenarios", new_manager.json_filename, new_manager.to_json)
@@ -37,7 +45,7 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted and failed to created an improperly named new combat scenario called: #{arg1}")
       end
     elsif action == "rename"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if !manager
         msg.respond("#{msg.author.display_name}, you do not have a combat scenario open.")
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to rename their nonexistant combat scenario.")
@@ -53,9 +61,9 @@ def register_combat_command(bot, scenario_hash)
       end
     elsif action == "open"
       if arg1 =~ /\A\w+\z/ and JSONManager.exist?("scenarios", "#{user_id}_#{arg1}.json")
-        old_manager = scenario_hash[user_id]
+        old_manager = @@scenario_hash[user_id]
         JSONManager.write_json("scenarios", old_manager.json_filename, old_manager.to_json) if old_manager
-        scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json("scenarios", "#{user_id}_#{arg1}.json"))
+        @@scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json("scenarios", "#{user_id}_#{arg1}.json"))
         msg.respond("#{msg.author.display_name}, you have opened #{arg1}.")
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) opened the scenario #{arg1}.")
       else
@@ -63,13 +71,13 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to open a nonexistant scenario.")
       end
     elsif action == "delete"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         JSONManager.delete_json("scenarios", manager.json_filename)
         JSONManager.write_json("scenarios", "deleted_" + manager.json_filename, manager.to_json)
         msg.respond("#{msg.author.display_name}, you deleted your scenario #{manager.name}")
         Logger.log("#{msg.author.display_name} deleted their scenario #{manager.name}")
-        scenario_hash[user_id] = nil
+        @@scenario_hash[user_id] = nil
       else
         msg.respond("#{msg.author.display_name}, you did not have a scenario open.")
         Logger.log("#{msg.author.display_name} attempted to close their scenario but had none open.")
@@ -80,18 +88,18 @@ def register_combat_command(bot, scenario_hash)
       msg.respond("#{msg.author.display_name} has the following scenarios:```\n#{names.join("\n")}```")
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) listed their scenarios.")
     elsif action == "close"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         JSONManager.write_json("scenarios", manager.json_filename, manager.to_json)
         msg.respond("#{msg.author.display_name}, you have saved and closed your scenario #{manager.name}")
         Logger.log("#{msg.author.display_name} closed their scenario #{manager.name}")
-        scenario_hash[user_id] = nil
+        @@scenario_hash[user_id] = nil
       else
         msg.respond("#{msg.author.display_name}, you did not have a scenario open.")
         Logger.log("#{msg.author.display_name} attempted to close their scenario but had none open.")
       end
     elsif action == "add"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         if arg1 =~ /\A\w+\z/ && arg2 =~ /\A-?\d+\z/
           amount = 1
@@ -112,7 +120,7 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} attempted to add a combatant to their scenario but had none open.")
       end
     elsif action == "edit"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         if arg1 =~ /\A\d+\z/ && arg2 =~ /\A\w+\z/ && arg3 =~ /\A-?\d+\z/
           id = arg1.to_i
@@ -136,7 +144,7 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} attempted to modify a combatant in their scenario but had none open.")
       end
     elsif action == "remove"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         if arg1 =~ /\A\d+\z/
           id = arg1.to_i
@@ -156,7 +164,7 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} attempted to delete a combatant in their scenario but had none open.")
       end
     elsif action == "run"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         manager.next_round
         msg.respond(manager.state_s)
@@ -166,7 +174,7 @@ def register_combat_command(bot, scenario_hash)
         Logger.log("#{msg.author.display_name} attempted to run their scenario but had none open.")
       end
     elsif action == "status"
-      manager = scenario_hash[user_id]
+      manager = @@scenario_hash[user_id]
       if manager
         msg.respond(manager.state_s)
         Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) displayed the current state of their combat scenario: #{manager.name}")
