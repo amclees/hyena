@@ -19,6 +19,7 @@ module JSONManager
   def self.read_json(subfolder, filename)
     json = nil
     Dir.chdir(@@json_folder) do
+      Dir.mkdir(subfolder) unless File::directory?(subfolder)
       Dir.chdir(subfolder) do
         File.open(filename, "r") do |file|
           file.each_line do |line|
@@ -32,6 +33,9 @@ module JSONManager
 
   def self.search(subfolder, regex)
     matched = []
+    Dir.chdir(@@json_folder) do
+      Dir.mkdir(subfolder) unless File::directory?(subfolder)
+    end
     Dir.entries("./#{@@json_folder}/#{subfolder}").each do |filename|
       match_data = regex.match(filename)
       matched.push(match_data.captures[0]) if match_data
@@ -42,8 +46,10 @@ module JSONManager
   def self.exist?(subfolder, filename)
     exists = nil
     Dir.chdir(@@json_folder) do
-      Dir.chdir(subfolder) do
-        exists = File.exist?(filename)
+      if File::directory?(subfolder)
+        Dir.chdir(subfolder) do
+          exists = File.exist?(filename)
+        end
       end
     end
     exists
@@ -52,6 +58,7 @@ module JSONManager
   def self.delete_json(subfolder, filename)
     json = nil
     Dir.chdir(@@json_folder) do
+      Dir.mkdir(subfolder) unless File::directory?(subfolder)
       Dir.chdir(subfolder) do
         File.open(filename, "r") do |file|
           file.each_line do |line|
