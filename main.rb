@@ -87,7 +87,7 @@ bot.command(:combat, description: "Allows access to combat functions (Try `#{bot
       msg.respond("#{msg.author.display_name}, \"#{arg1}\" is not a valid name.")
       Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted and failed to created an improperly named new combat scenario called: #{arg1}")
     end
-  elsif action == "rename"
+  elsif action == "rename" # Deletion broken, TODO fix
     manager = scenario_hash[user_id]
     if !manager
       msg.respond("#{msg.author.display_name}, you do not have a combat scenario open.")
