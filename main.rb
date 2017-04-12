@@ -94,8 +94,6 @@ bot.playing do |event|
   end
 end
 
-
-
 bot.run :async
 Logger.log("Bot started")
 
