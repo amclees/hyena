@@ -88,7 +88,7 @@ bot.command(:playing, help_available: false, permission_level: 100) do |msg, arg
 end
 
 bot.playing do |event|
-  if(current_game == "D&D")
+  if current_game == "D&D" && event.game
     bot.send_message(channel_general.id, "#{event.user.mention} Stop playing #{event.game} and get on here!")
     Logger.log("#{event.user.username} (id: #{event.user.id}) was warned not to play #{event.game}")
   end
