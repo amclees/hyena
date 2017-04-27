@@ -1,5 +1,7 @@
 require 'json'
 
+# Calendar keeps tracks of the events of each day and calls handlers
+# as time progresses.
 class Calendar
   def initialize(current_date, event_hash, handlers)
     @current_date = current_date
@@ -11,7 +13,7 @@ class Calendar
   end
 
   def advance_time(days)
-    for i in 0...days do
+    days.times do
       current_date = (current_date + 1)
       @handlers.each do |handler|
         handler.call(current_date)
@@ -37,7 +39,7 @@ class Calendar
 
   def add_events(date, *events)
     events.each do |event|
-      add_event(events)
+      add_event(date, event)
     end
   end
 
@@ -46,14 +48,14 @@ class Calendar
   end
 
   def to_json
-    JSON.generate({
-      :current_date => current_date.to_s,
-      :event_hash => event_hash
-    })
+    JSON.generate(
+      current_date: current_date.to_s,
+      event_hash: event_hash
+    )
   end
 
   def self.from_json(json)
     parsed = JSON.parse(json)
-    Calendar.new Date.parse(parsed["current_date"]), parsed["event_hash"], []
+    Calendar.new Date.parse(parsed['current_date']), parsed['event_hash'], []
   end
 end
