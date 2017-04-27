@@ -1,17 +1,20 @@
 require 'discordrb'
+require 'yaml'
 require_relative './json_manager.rb'
-require_relative './hyena_secret.rb'
 require_relative './dice.rb'
 require_relative './logger.rb'
 require_relative './combat/combat_container.rb'
 
-HyenaLogger.log('Starting up')
+HyenaLogger.log('Started running main.')
+
+CONFIG = YAML.load_file('config.yaml')
+
 bot = Discordrb::Commands::CommandBot.new(
-  token: HyenaSecret.bot_token,
-  client_id: HyenaSecret.client_id,
+  token: CONFIG['bot_token'],
+  client_id: CONFIG['client_id'],
   prefix: '.'
 )
-HyenaLogger.log('Created bot')
+HyenaLogger.log('Created bot.')
 
 JSONManager.init('data')
 
