@@ -12,7 +12,7 @@ class Calendar
 
   def advance_time(days)
     for i in 0...days do
-      current_date = (current_date += 1)
+      current_date = (current_date + 1)
       @handlers.each do |handler|
         handler.call(current_date)
       end
@@ -20,15 +20,25 @@ class Calendar
   end
 
   def get_events(date)
-
+    if @event_hash.key?(date)
+      @event_hash[date]
+    else
+      []
+    end
   end
 
   def add_event(date, event)
-
+    if @event_hash.key?(date)
+      @event_hash[date].push(event)
+    else
+      @event_hash[date] = [event]
+    end
   end
 
   def add_events(date, *events)
-    
+    events.each do |event|
+      add_event(events)
+    end
   end
 
   def register_dependency_handler(&handler)

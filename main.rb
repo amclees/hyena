@@ -5,11 +5,15 @@ require_relative './dice.rb'
 require_relative './logger.rb'
 require_relative './combat/combat_container.rb'
 
-Logger.log("Starting up")
-bot = Discordrb::Commands::CommandBot.new token: HyenaSecret.bot_token, client_id: HyenaSecret.client_id, prefix: "."
-Logger.log("Created bot")
+Logger.log('Starting up')
+bot = Discordrb::Commands::CommandBot.new(
+  token: HyenaSecret.bot_token,
+  client_id: HyenaSecret.client_id,
+  prefix: '.'
+)
+Logger.log('Created bot')
 
-JSONManager.init("data")
+JSONManager.init('data')
 
 puts "Invite URL is #{bot.invite_url}."
 
@@ -29,7 +33,7 @@ bot.message(content: /(\d*)d(\d*)/i) do |msg|
   if rolls > 1000
     msg.respond("#{msg.author.display_name}, you can't roll that many dice!")
     Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to roll a #{rolls}d#{sides} but failed due to too many dice.")
-  elsif sides > 10_0000_0000
+  elsif sides > 1_000_000_000
     msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
     Logger.log("#{msg.author.display_name} (id: #{msg.author.id}) attempted to roll a #{rolls}d#{sides} but failed due to too many sided dice.")
   else
@@ -54,7 +58,7 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
       Logger.log("Saved scenario #{combat_manager.name} owned by UID #{combat_manager.user_id}")
     end
   end
-  sleep(0.1) until not Logger.logging
+  sleep(0.1) while Logger.logging
   Logger.save
   msg.respond("Done saving, exiting now.")
   bot.invisible # Causes offline to immediately display
