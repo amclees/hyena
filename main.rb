@@ -9,7 +9,14 @@ require_relative './combat/combat_container.rb'
 
 HyenaLogger.log('Started running main.')
 
-CONFIG = YAML.load_file('config.yaml')
+if File.exist?('config.yml')
+  CONFIG = YAML.load_file('config.yml')
+elsif File.exist?('config.yaml')
+  CONFIG = YAML.load_file('config.yaml')
+else
+  puts 'No config.yml or config.yaml found, please create one with your bot_token and client_id.'
+  exit
+end
 
 HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
 
@@ -39,20 +46,15 @@ bot.message(content: /(\d*)d(\d*)/i) do |msg|
   sides = pair[1].to_i
   if rolls > 1000
     msg.respond("#{msg.author.display_name}, you can't roll that many dice!")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} "\
-    "but failed due to too many dice.")
+    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many dice.")
   elsif sides > 1_000_000_000
-    msg.respond("#{msg.author.display_name}, you can't roll dice with that "\
-    "many sides!")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides}"\
-    " but failed due to too many sided dice.")
+    msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
+    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many sided dice.")
   else
     roll_array = Dice.dx_array(rolls, sides)
     roll = roll_array.inject(:+)
-    msg.respond("#{msg.author.display_name}, you rolled a #{ roll } on a "\
-    " #{rolls}d#{sides}")
-    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled"\
-    " a #{roll} on a #{rolls}d#{sides}")
+    msg.respond("#{msg.author.display_name}, you rolled a #{ roll } on a #{rolls}d#{sides}")
+    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   end
 end
 
@@ -60,32 +62,33 @@ bot.message do |msg|
   HyenaLogger.log_member(msg.author, "said #{msg.content}")
 end
 
-bot.command(:exit, help_available: false, permission_level: 100) do |msg|
-  HyenaLogger.log_member(msg.author, 'issued command to exit.')
-  msg.respond('Saving and exiting...')
-  HyenaLogger.log('Sent exit message.')
+def game_message(member)
+  "#{member.mention} Stop playing #{member.game} and join the session."
+end
+
+def save_and_exit
   scenario_hash.keys.each do |key|
     combat_manager = scenario_hash[key]
-    if combat_manager
-      JSONManager.write_json(
-        'scenarios',
-        combat_manager.json_filename,
-        combat_manager.to_json
-      )
-      HyenaLogger.log("Saved scenario #{combat_manager.name} owned by UID "\
-      "#{combat_manager.user_id}")
-    end
+    next unless combat_manager
+    JSONManager.write_json(
+      'scenarios',
+      combat_manager.json_filename,
+      combat_manager.to_json
+    )
+    HyenaLogger.log("Saved scenario #{combat_manager.name} owned by UID #{combat_manager.user_id}")
   end
   sleep(0.1) while HyenaLogger.logging
   HyenaLogger.save
-  msg.respond('Done saving, exiting now.')
   # Causes offline status to immediately display
   bot.invisible
   exit
 end
 
-def game_message(member)
-  "#{member.mention} Stop playing #{member.game} and join the session."
+bot.command(:exit, help_available: false, permission_level: 100) do |msg|
+  HyenaLogger.log_member(msg.author, 'issued command to exit.')
+  msg.respond('Saving and exiting.')
+  HyenaLogger.log('Sent exit message.')
+  save_and_exit
 end
 
 current_game = nil

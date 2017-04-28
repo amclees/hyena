@@ -1,0 +1,17 @@
+# Rubocop config used for development
+
+AllCops:
+  # Important for <<~ heredoc notation
+  TargetRubyVersion: 2.3
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false

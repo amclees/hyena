@@ -1,0 +1,5 @@
+# This is a sample file represented the structure of the config YAML file.
+bot_token: <token for bot>
+client_id: <client id for bot>
+# Log files will be written to the disk every save interval (in seconds).
+log-save-interval: 600
