@@ -1,3 +1,5 @@
+# frozen_string_literal: false
+
 require 'json'
 
 # Calendar keeps tracks of the events of each day and calls handlers

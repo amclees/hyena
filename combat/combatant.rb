@@ -1,6 +1,9 @@
+# frozen_string_literal: false
+
 require 'json'
 require_relative '../dice.rb'
 
+# Handles data and serialization of combatants in a scenario.
 class Combatant
   attr_accessor :name, :initiative, :id, :last_roll
   @@pool = 0
@@ -14,7 +17,8 @@ class Combatant
   end
 
   def roll_initiative
-    @last_roll = (Dice.d20.to_f + @initiative.to_f + (Dice.dx(1, 100).to_f / 100.0)).round(2)
+    tiebreaker = Dice.dx(1, 100).to_f / 100.0
+    @last_roll = (Dice.d20.to_f + @initiative.to_f + tiebreaker).round(2)
   end
 
   def json_filename
@@ -23,7 +27,7 @@ class Combatant
 
   def self.from_json(json)
     hash = JSON.parse(json)
-    Combatant.new hash["name"], hash["initiative"]
+    Combatant.new hash['name'], hash['initiative']
   end
 
   def to_json
@@ -32,22 +36,19 @@ class Combatant
 
   def to_hash
     {
-      :name => @name,
-      :initiative => @initiative
+      name: @name,
+      initiative: @initiative
     }
   end
 
   def self.from_hash(hash)
-    if hash[:name] and hash[:initiative]
-      Combatant.new hash[:name], hash[:initiative]
-    elsif hash["name"] and hash["initiative"]
-      Combatant.new hash["name"], hash["initiative"]
-    else
-      nil
-    end
+    return Combatant.new hash[:name], hash[:initiative] if hash[:name] && hash[:initiative]
+    return Combatant.new hash['name'], hash['initiative'] if hash['name'] && hash['initiative']
+    nil
   end
 
   def to_s
-    "#{name} #{initiative < 0 ? "-" : "+"}#{initiative.abs} (\##{id}) - Initiative: #{last_roll}"
+    "#{name} #{initiative.negative? ? '-' : '+'}#{initiative.abs} (\##{id}) "\
+    "- Initiative: #{last_roll}"
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: false
+
 require 'json'
 require_relative '../dice.rb'
 
@@ -35,7 +37,7 @@ class CombatManager
 
   # Returns a string representing the current state
   def state_s
-    combatants_strings = @combatants.map { |combatant| combatant.to_s }
+    combatants_strings = @combatants.map(&:to_s)
     "Round #{@round} of #{@name}\n#{combatants_strings.join("\n")}"
   end
 
@@ -51,9 +53,9 @@ class CombatManager
 
   def to_hash
     {
-      :name => @name,
-      :combatants => @combatants.map { |combatant| combatant.to_hash },
-      :user_id => @user_id
+      name: @name,
+      combatants: @combatants.map(&:to_hash),
+      user_id: @user_id
     }
   end
 
@@ -63,8 +65,10 @@ class CombatManager
 
   def self.from_json(json)
     hash = JSON.parse(json)
-    combatants = hash["combatants"].map { |combatant_hash| Combatant.from_hash(combatant_hash) }
-    CombatManager.new hash["name"], combatants, hash["user_id"]
+    combatants = hash['combatants'].map do |combatant_hash|
+      Combatant.from_hash(combatant_hash)
+    end
+    CombatManager.new hash['name'], combatants, hash['user_id']
   end
 
   def json_filename

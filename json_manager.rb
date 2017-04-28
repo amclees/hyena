@@ -1,3 +1,5 @@
+# frozen_string_literal: false
+
 # Handles reading and writing JSON data for each module
 module JSONManager
   def self.init(folder_name)

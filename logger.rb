@@ -1,3 +1,5 @@
+# frozen_string_literal: false
+
 require 'date'
 
 # Handles logging and saving logs.
@@ -31,10 +33,11 @@ module HyenaLogger
   def self.write_log
     filename = DateTime.now.strftime('hyena-%d-%m-%Y-%H-%M-%S.log')
     puts "Writing ./logs/#{filename}"
-    file = File.new("./logs/#{filename}", "w")
+    file = File.new("./logs/#{filename}", 'w')
     from = @@since.strftime('%d-%m-%Y-%H:%M:%S')
     to = DateTime.now.strftime('%d-%m-%Y-%H:%M:%S')
-    file.syswrite("This log covers the time from #{from} to #{to}\n#{@@logs.join("\n")}")
+    file.syswrite("This log covers the time from #{from} to #{to}\n"\
+      "#{@@logs.join('\n')}")
     file.close
     @@logs = []
     @@since = DateTime.now

@@ -1,3 +1,5 @@
+# frozen_string_literal: false
+
 require_relative '../json_manager.rb'
 require_relative '../logger.rb'
 require_relative './combat_manager.rb'
@@ -12,23 +14,29 @@ module Combat
     @@scenario_hash = scenario_hash
   end
 
-  command(:combat, description: "Allows access to combat functions (Try `#{@@prefix}combat help` for more details).", permission_level: 0) do |msg, action, arg1, arg2, arg3|
+  command(
+    :combat,
+    description: "Allows access to combat functions (Try `#{@@prefix}combat help` for more details).",
+    permission_level: 0
+    ) do |msg, action, arg1, arg2, arg3|
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) issued combat command.")
     user_id = msg.author.id
-    if action == "help"
+    if action == 'help'
       msg.respond(
-  %(The `combat` commands allows you to create and save combat scenarios for easy initiative handling. Valid names consist of letters, numbers, and underscores. It can be used as follows:
-  `new <name>` - Start a new combat scenario with the specified name, saving and leaving your old one.
-  `rename <new name>` - Rename the current combat scenario
-  `open <name>` - Open the combat scenario with the specified name
-  `delete` - Permanently delete your active scenario
-  `scenarios` - View a list of all your saved scenarios
-  `close` - Closes and saves the current combat scenario
-  `add <name> <initiative> [\# of duplicates (default 1)]` - Adds characters to your scenario
-  `edit <id> <new name> <new initiative>` - Assigns the specified name and initiative to an existing combatant
-  `remove <id>` - Removes the specified combatant from combat
-  `run` - Proceed your combat scenario to the next round and display turn order
-  `status` - Print the name and current status of your combat scenario)
+        <<~HELP_TEXT
+          The `combat` commands allows you to create and save combat scenarios for easy initiative handling. Valid names consist of letters, numbers, and underscores. It can be used as follows:
+            `new <name>` - Start a new combat scenario with the specified name, saving and leaving your old one.
+            `rename <new name>` - Rename the current combat scenario
+            `open <name>` - Open the combat scenario with the specified name
+            `delete` - Permanently delete your active scenario
+            `scenarios` - View a list of all your saved scenarios
+            `close` - Closes and saves the current combat scenario
+            `add <name> <initiative> [\# of duplicates (default 1)]` - Adds characters to your scenario
+            `edit <id> <new name> <new initiative>` - Assigns the specified name and initiative to an existing combatant
+            `remove <id>` - Removes the specified combatant from combat
+            `run` - Proceed your combat scenario to the next round and display turn order
+            `status` - Print the name and current status of your combat scenario
+        HELP_TEXT
       )
       HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) listed combat command options.")
     elsif action == "new"
