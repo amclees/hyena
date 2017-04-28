@@ -47,7 +47,8 @@ bot.message(content: /(\d*)d(\d*)/i) do |msg|
     HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides}"\
     " but failed due to too many sided dice.")
   else
-    roll = Dice.dx(rolls, sides)
+    roll_array = Dice.dx_array(rolls, sides)
+    roll = roll_array.inject(:+)
     msg.respond("#{msg.author.display_name}, you rolled a #{ roll } on a "\
     " #{rolls}d#{sides}")
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled"\

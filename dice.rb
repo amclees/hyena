@@ -4,11 +4,16 @@
 module Dice
   def self.dx(amount, sides)
     return 0 if amount.zero? || sides.zero?
-    sum = 0
+    rand(amount * sides - amount) + amount
+  end
+
+  def self.dx_array(amount, sides)
+    return 0 if amount.zero? || sides.zero? || sides > 10_000
+    array = []
     (0...amount).each do
-      sum += rand(sides) + 1
+      array.push(rand(sides) + 1)
     end
-    sum
+    array
   end
 end
 
