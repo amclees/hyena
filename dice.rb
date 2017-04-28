@@ -3,15 +3,12 @@
 # Serves as a container for dice rolling methods.
 module Dice
   def self.dx(amount, sides)
-    if amount.zero? || sides.zero?
-      sum = 0
-      (0...amount).each do
-        sum += rand(sides) + 1
-      end
-      sum
-    else
-      0
+    return 0 if amount.zero? || sides.zero?
+    sum = 0
+    (0...amount).each do
+      sum += rand(sides) + 1
     end
+    sum
   end
 end
 

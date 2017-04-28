@@ -11,6 +11,8 @@ HyenaLogger.log('Started running main.')
 
 CONFIG = YAML.load_file('config.yaml')
 
+HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
+
 bot = Discordrb::Commands::CommandBot.new(
   token: CONFIG['bot_token'],
   client_id: CONFIG['client_id'],
@@ -129,7 +131,7 @@ if channel_general
       **Hello!** I, the *hyena*, have come to roll dice and do other things.
       Type `#{bot.prefix}help` to see what I can do for you.
       Type `<number of dice>d<sides>` to roll dice.
-      For example, `1d20`, `4d6`, or `1d100`.
+      For example, `1d20`, `4d6`, or `1d100`.`
     HYENA_INTRO
   )
 end
