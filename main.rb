@@ -38,8 +38,7 @@ bot.bucket :file_cmd, limit: 3, time_span: 120, delay: 5
 server = nil
 channel_general = nil
 
-scenario_hash = {}
-Combat.init(bot.prefix, scenario_hash)
+Combat.init(bot.prefix)
 bot.include! Combat
 
 hyena_intro = <<~HYENA_INTRO
@@ -85,7 +84,8 @@ def game_message(member)
   "#{member.mention} Stop playing #{member.game} and join the session."
 end
 
-def save_and_exit(bot, scenario_hash)
+def save_and_exit(bot)
+  scenario_hash = Combat.scenario_hash
   scenario_hash.keys.each do |key|
     combat_manager = scenario_hash[key]
     next unless combat_manager
@@ -107,7 +107,7 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
   HyenaLogger.log_member(msg.author, 'issued command to exit.')
   msg.respond('Saving and exiting.')
   HyenaLogger.log('Sent exit message.')
-  save_and_exit(bot, scenario_hash)
+  save_and_exit(bot)
 end
 
 current_game = nil
