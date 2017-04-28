@@ -40,20 +40,23 @@ scenario_hash = {}
 Combat.init(bot.prefix, scenario_hash)
 bot.include! Combat
 
-bot.message(content: /(\d*)d(\d*)/i) do |msg|
+bot.message(content: /(?:#{Regexp.quote(bot.prefix)})?(\d*)d(\d*)/i) do |msg|
   pair = msg.content.scan(/(\d*)d(\d*)/i)[0]
   rolls = pair[0].to_i
   sides = pair[1].to_i
-  if rolls > 1000
-    msg.respond("#{msg.author.display_name}, you can't roll that many dice!")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many dice.")
-  elsif sides > 1_000_000_000
+  if sides > 1_000_000_000
     msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
     HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many sided dice.")
-  else
+  elsif (2..300).cover?(rolls) && (1..1000).cover?(sides)
     roll_array = Dice.dx_array(rolls, sides)
     roll = roll_array.inject(:+)
-    msg.respond("#{msg.author.display_name}, you rolled a #{ roll } on a #{rolls}d#{sides}")
+    roll_table = Dice.generate_roll_table(roll_array, sides)
+    max_message = roll_array.include?(sides) ? "\nYou rolled a natural #{Dice.get_emoji_str(sides)}" : ''
+    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{roll} on a #{rolls}d#{sides}#{max_message}")
+    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
+  else
+    roll = Dice.dx(rolls, sides)
+    msg.respond("#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}")
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   end
 end
