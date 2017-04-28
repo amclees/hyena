@@ -20,6 +20,8 @@ end
 
 HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
 
+admin_ids = CONFIG.key?('log-save-interval') ? CONFIG['admin_ids'] : []
+
 bot = Discordrb::Commands::CommandBot.new(
   token: CONFIG['bot_token'],
   client_id: CONFIG['client_id'],
@@ -40,6 +42,19 @@ scenario_hash = {}
 Combat.init(bot.prefix, scenario_hash)
 bot.include! Combat
 
+hyena_intro = <<~HYENA_INTRO
+  **Hello!** I, the *hyena*, have come to roll dice and do other things.
+  Type `#{bot.prefix}help` to see what I can do for you.
+  Type `<number of dice>d<sides>` to roll dice.
+  For example, `1d20`, `4d6`, or `1d100`.`
+HYENA_INTRO
+
+bot.command(:intro, description: 'Ask hyena to introduce itself.') do |msg|
+  msg.respond(hyena_intro)
+end
+
+bot.command(:xdx, description: 'Type in `<amount>d<sides>` to roll dice.')
+
 bot.message(content: /(?:#{Regexp.quote(bot.prefix)})?(\d*)d(\d*)/i) do |msg|
   pair = msg.content.scan(/(\d*)d(\d*)/i)[0]
   rolls = pair[0].to_i
@@ -47,16 +62,17 @@ bot.message(content: /(?:#{Regexp.quote(bot.prefix)})?(\d*)d(\d*)/i) do |msg|
   if sides > 1_000_000_000
     msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
     HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many sided dice.")
-  elsif (2..300).cover?(rolls) && (1..1000).cover?(sides)
+  elsif (2..200).cover?(rolls) && (1..1000).cover?(sides)
     roll_array = Dice.dx_array(rolls, sides)
     roll = roll_array.inject(:+)
     roll_table = Dice.generate_roll_table(roll_array, sides)
-    max_message = roll_array.include?(sides) ? "\nYou rolled a natural #{Dice.get_emoji_str(sides)}" : ''
-    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{roll} on a #{rolls}d#{sides}#{max_message}")
+    max_message = roll_array.include?(sides) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
+    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}#{max_message}")
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   else
     roll = Dice.dx(rolls, sides)
-    msg.respond("#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}")
+    message = roll == 1 ? 'You rolled a natural :one: :stuck_out_tongue_winking_eye:' : "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}"
+    msg.respond(message)
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   end
 end
@@ -69,7 +85,7 @@ def game_message(member)
   "#{member.mention} Stop playing #{member.game} and join the session."
 end
 
-def save_and_exit
+def save_and_exit(bot, scenario_hash)
   scenario_hash.keys.each do |key|
     combat_manager = scenario_hash[key]
     next unless combat_manager
@@ -91,7 +107,7 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
   HyenaLogger.log_member(msg.author, 'issued command to exit.')
   msg.respond('Saving and exiting.')
   HyenaLogger.log('Sent exit message.')
-  save_and_exit
+  save_and_exit(bot, scenario_hash)
 end
 
 current_game = nil
@@ -130,17 +146,9 @@ end
 
 server = channel_general.server
 
-bot.set_user_permission(125750053309513728, 100)
-if channel_general
-  bot.send_message(
-    channel_general.id,
-    <<~HYENA_INTRO
-      **Hello!** I, the *hyena*, have come to roll dice and do other things.
-      Type `#{bot.prefix}help` to see what I can do for you.
-      Type `<number of dice>d<sides>` to roll dice.
-      For example, `1d20`, `4d6`, or `1d100`.`
-    HYENA_INTRO
-  )
+admin_ids.each do |admin_id|
+  bot.set_user_permission(admin_id, 100)
 end
+
 bot.sync
 HyenaLogger.log('Initialization completed.')

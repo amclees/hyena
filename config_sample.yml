@@ -3,3 +3,7 @@ bot_token: <token for bot>
 client_id: <client id for bot>
 # Log files will be written to the disk every save interval (in seconds).
 log-save-interval: 600
+# Admins will have permissions for all commands.
+admin_ids:
+  - <user id>
+  - <other user id>
