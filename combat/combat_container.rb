@@ -118,7 +118,7 @@ module Combat
           amount = arg3 =~ /\A\d+\z/ ? arg3.to_i : 1
           amount = 1 if amount > 10
           amount.times do
-            manager.combatants.push(Combatant.new arg1, arg2.to_i)
+            manager.combatants.push(Combatant.new(arg1, arg2.to_i))
           end
           msg.respond("#{msg.author.display_name}, your combatants have been added.")
           HyenaLogger.log("#{msg.author.display_name} added combatants to their scenario.")

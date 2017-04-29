@@ -3,17 +3,21 @@
 require 'json'
 require_relative '../dice.rb'
 
+# Holds combatants and handles combat round progression
 class CombatManager
   attr_accessor :combatants, :round, :name, :id
   attr_reader :user_id
-  @@pool = 0
+  @pool = 0
+
+  def self.new_id
+    @pool += 1
+  end
 
   def initialize(name, combatants, user_id)
     @name = name
     @combatants = combatants
     @round = 0
-    @id = @@pool
-    @@pool += 1
+    @id = self.class.new_id
     @user_id = user_id
   end
 
@@ -25,7 +29,7 @@ class CombatManager
   def pop_combatant(id)
     dropped = nil
     unless @combatants.empty?
-      for i in (0...@combatants.length) do
+      (0...@combatants.length).each do |i|
         if id == @combatants[i].id
           dropped = @combatants.delete_at(i)
           break

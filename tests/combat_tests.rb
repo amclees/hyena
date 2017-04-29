@@ -17,15 +17,15 @@ class CombatantTest < Test::Unit::TestCase
     (0...tests_amount).each do
       c1_roll = c1.roll_initiative
       c2_roll = c2.roll_initiative
-      assert_true((13..33) === c1_roll)
-      assert_true((0..20) === c2_roll)
+      assert_true((13..33).cover?(c1_roll))
+      assert_true((0..20).cover?(c2_roll))
       c1_avg += c1_roll
       c2_avg += c2_roll
     end
     c1_avg /= tests_amount
     c2_avg /= tests_amount
-    assert_true((20..25) === c1_avg)
-    assert_true((7..12) === c2_avg)
+    assert_true((20..25).cover?(c1_avg))
+    assert_true((7..12).cover?(c2_avg))
     puts "#{c1} avg #{c1_avg}"
     puts "#{c2} avg #{c2_avg}"
   end
@@ -44,7 +44,7 @@ class CombatantTest < Test::Unit::TestCase
   end
 
   def test_hash
-    c1 = Combatant.from_hash(name: 'Tester', initiative: 12 )
+    c1 = Combatant.from_hash(name: 'Tester', initiative: 12)
     assert_equal(c1.name, 'Tester')
     assert_equal(c1.initiative, 12)
 
@@ -58,6 +58,12 @@ end
 class CombatManagerTest < Test::Unit::TestCase
   # Combatant guaranteed to roll its initiative for easier testing of manager
   class PureInitiativeCombatant < Combatant
+    @pool = 1000
+
+    def self.new_id
+      @pool += 1
+    end
+
     def roll_initiative
       @last_roll = @initiative
     end
@@ -71,7 +77,7 @@ class CombatManagerTest < Test::Unit::TestCase
     c4 = PureInitiativeCombatant.new 'Tester', 12
     encounter = [c1, c2, c3, c4]
     ordered = CombatManager.get_turn_ordered(encounter)
-    for i in (0...ordered.length) do
+    (0...ordered.length).each do |i|
       combatant = ordered[i]
       puts combatant.to_s
       assert_equal(eval("c#{4 - i}"), combatant)

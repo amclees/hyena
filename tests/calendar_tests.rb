@@ -4,6 +4,7 @@ require 'test/unit'
 require 'date'
 require_relative '../world/calendar/calendar.rb'
 
+# Tests calendar including handlers, events, and JSON serialization
 class CalendarTest < Test::Unit::TestCase
   def test_time
     calendar = Calendar.new(Date.new(1002, 2, 3))
@@ -18,7 +19,7 @@ class CalendarTest < Test::Unit::TestCase
     handler1 = lambda do |current_date|
       counter += current_date.day
     end
-    handler2 = lambda do |current_date|
+    handler2 = lambda do |_current_date|
       counter -= 1
     end
     handlers = [handler1, handler2]

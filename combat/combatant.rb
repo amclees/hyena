@@ -6,13 +6,16 @@ require_relative '../dice.rb'
 # Handles data and serialization of combatants in a scenario.
 class Combatant
   attr_accessor :name, :initiative, :id, :last_roll
-  @@pool = 0
+  @pool = 0
+
+  def self.new_id
+    @pool += 1
+  end
 
   def initialize(name, initiative)
     @name = name
     @initiative = initiative
-    @id = @@pool
-    @@pool += 1
+    @id = self.class.new_id
     @last_roll = 0.0
   end
 

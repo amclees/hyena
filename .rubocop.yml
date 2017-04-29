@@ -9,6 +9,10 @@ Security/Eval:
   Exclude:
     - tests/*
 
+# Disables case equality (===) checking because it is the way of checking dates
+CaseEquality:
+  Enabled: false
+
 Metrics/AbcSize:
   Enabled: false
 
