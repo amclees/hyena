@@ -4,6 +4,17 @@ AllCops:
   # Important for <<~ heredoc notation
   TargetRubyVersion: 2.3
 
+# Ignore `eval` in tests
+Security/Eval:
+  Exclude:
+    - tests/*
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
 Metrics/BlockLength:
   Enabled: false
 
@@ -13,5 +24,17 @@ Metrics/ClassLength:
 Metrics/ModuleLength:
   Enabled: false
 
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
 Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
   Enabled: false
