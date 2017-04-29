@@ -70,7 +70,9 @@ bot.message(content: /(?:#{Regexp.quote(bot.prefix)})?(\d*)d(\d*)/i) do |msg|
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   else
     roll = Dice.dx(rolls, sides)
-    message = roll == 1 ? 'You rolled a natural :one: :stuck_out_tongue_winking_eye:' : "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}"
+    message = "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}"
+    message = 'You rolled a natural :one: :stuck_out_tongue_winking_eye:' if roll == 1
+    message = "You rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" if roll == sides
     msg.respond(message)
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
   end

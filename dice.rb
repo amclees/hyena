@@ -17,7 +17,7 @@ module Dice
 
   def self.dx(amount, sides)
     return 0 if amount.zero? || sides.zero?
-    rand(amount * sides - amount) + amount
+    rand(amount * sides + 1 - amount) + amount
   end
 
   def self.dx_array(amount, sides)
