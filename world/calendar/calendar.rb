@@ -1,11 +1,13 @@
 # frozen_string_literal: false
 
 require 'json'
+require 'date'
 
-# Calendar keeps tracks of the events of each day and calls handlers
-# as time progresses.
+# Calendar keeps tracks of the events of each day and calls handlers as time progresses.
 class Calendar
-  def initialize(current_date, event_hash, handlers)
+  attr_reader :current_date
+
+  def initialize(current_date, event_hash = {}, handlers = [])
     @current_date = current_date
     @event_hash = event_hash
     @handlers = []
@@ -16,9 +18,9 @@ class Calendar
 
   def advance_time(days)
     days.times do
-      current_date = (current_date + 1)
+      @current_date = (@current_date + 1)
       @handlers.each do |handler|
-        handler.call(current_date)
+        handler.call(@current_date)
       end
     end
   end
@@ -39,25 +41,34 @@ class Calendar
     end
   end
 
-  def add_events(date, *events)
+  def add_event_today(event)
+    add_event(@current_date, event)
+  end
+
+  def add_events(date, events)
     events.each do |event|
       add_event(date, event)
     end
   end
 
-  def register_dependency_handler(&handler)
+  def register_dependency_handler(handler)
     @handlers.push(handler)
   end
 
   def to_json
     JSON.generate(
-      current_date: current_date.to_s,
-      event_hash: event_hash
+      current_date: @current_date.to_s,
+      event_hash: @event_hash
     )
   end
 
-  def self.from_json(json)
+  def self.from_json(json, handlers = [])
     parsed = JSON.parse(json)
-    Calendar.new Date.parse(parsed['current_date']), parsed['event_hash'], []
+    event_hash = parsed['event_hash']
+    dated_event_hash = {}
+    event_hash.each_pair do |date_string, event_array|
+      dated_event_hash[Date.parse(date_string)] = event_array
+    end
+    Calendar.new Date.parse(parsed['current_date']), dated_event_hash, handlers
   end
 end
