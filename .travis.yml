@@ -2,3 +2,10 @@ language: ruby
 
 rvm:
  - 2.3.0
+
+addons:
+  code_climate:
+    repo_token:
+
+after_success:
+  - bundle exec 08c1584c2529afdbd8b61033c49626d074dac297c8e80dcf917428e72d4e1957
