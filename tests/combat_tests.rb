@@ -125,6 +125,11 @@ class CombatManagerTest < Test::Unit::TestCase
     end
     assert_true(!manager_from_json.combatants.empty?)
 
-    assert_equal('{"name":"Test","combatants":[{"name":"Tester","initiative":12},{"name":"Goblin","initiative":-1}],"user_id":null}', manager_from_json.to_json)
+    c1_json = '{"name":"Tester","initiative":12}'
+    c2_json = '{"name":"Goblin","initiative":-1}'
+    manager_json = manager_from_json.to_json
+    assert_true(manager_json.include?('{"name":"Test",'))
+    assert_true(manager_json.include?(c1_json))
+    assert_true(manager_json.include?(c2_json))
   end
 end

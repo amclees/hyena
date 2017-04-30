@@ -33,6 +33,7 @@ module JSONManager
     json
   end
 
+  # Returns an array of all the first capture groups of the regex
   def self.search(subfolder, regex)
     matched = []
     Dir.chdir(@json_folder) do

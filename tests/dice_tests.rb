@@ -43,6 +43,70 @@ class TestDice < Test::Unit::TestCase
     end
   end
 
+  def test_dx_array
+    d2 = Dice.dx_array(30, 2)
+    d6 = Dice.dx_array(75, 6)
+    d10 = Dice.dx_array(200, 10)
+    d20 = Dice.dx_array(3000, 20)
+    d100 = Dice.dx_array(10_000, 100)
+
+    # Coverage testing
+    assert_true(((1..2).to_set - d2.to_set).empty?)
+    assert_true(((1..6).to_set - d6.to_set).empty?)
+    assert_true(((1..10).to_set - d10.to_set).empty?)
+    assert_true(((1..20).to_set - d20.to_set).empty?)
+    assert_true(((1..100).to_set - d100.to_set).empty?)
+
+    # Bounds testing
+    d2.each do |roll|
+      assert_true((1..2).cover?(roll))
+    end
+
+    d6.each do |roll|
+      assert_true((1..6).cover?(roll))
+    end
+
+    d10.each do |roll|
+      assert_true((1..10).cover?(roll))
+    end
+
+    d20.each do |roll|
+      assert_true((1..20).cover?(roll))
+    end
+
+    d100.each do |roll|
+      assert_true((1..100).cover?(roll))
+    end
+  end
+
+  def test_digits_needed
+    10_000.times do
+      num = rand(1_000_000_000)
+      str_digits = num.to_s.length
+      dice_digits = Dice.digits(num)
+      assert_equal(str_digits, dice_digits)
+    end
+  end
+
+  def test_emoji_generator
+    test_num = 1_234_567_890
+    assert_equal(Dice.get_emoji_str(test_num), ':one::two::three::four::five::six::seven::eight::nine::zero:')
+  end
+
+  def test_roll_table
+    modulus = 11
+    congruent_rolls = rand(modulus)
+    congruent_sides = rand(modulus)
+    (2..200).each do |rolls|
+      next unless rolls % modulus == congruent_rolls
+      (1..1000).each do |sides|
+        next unless sides % modulus == congruent_sides
+        roll_table = Dice.generate_roll_table(Dice.dx_array(rolls, sides), sides)
+        assert_true(roll_table.length <= 2000)
+      end
+    end
+  end
+
   def test_meta_methods_auto
     10_000.times do
       sides = rand(99) + 2
