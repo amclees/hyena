@@ -1,5 +1,8 @@
 # frozen_string_literal: false
 
+require 'simplecov'
+SimpleCov.start
+
 require 'test/unit'
 require_relative '../combat/combatant.rb'
 require_relative '../combat/combat_manager.rb'

@@ -1,5 +1,8 @@
 # frozen_string_literal: false
 
+require 'simplecov'
+SimpleCov.start
+
 require 'test/unit'
 require 'date'
 require_relative '../world/calendar/calendar.rb'

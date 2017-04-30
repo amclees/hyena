@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'simplecov'
-SimpleCov.start
-
 require 'rake/testtask'
 require 'rubocop/rake_task'
 
