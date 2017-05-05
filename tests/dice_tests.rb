@@ -154,4 +154,34 @@ class TestDice < Test::Unit::TestCase
       assert_true((3..60).cover?(Dice.d20x(3)))
     end
   end
+
+  def test_regex
+    regex = Dice.dice_regex
+    captured1 = "2048    \n       d    204   *-  \n\n\n  2".scan(regex)[0]
+    captured2 = '2d20+5'.scan(regex)[0]
+    assert_equal(['2048', '204', '*-', '2'], captured1)
+    assert_equal(['2', '20', '+', '5'], captured2)
+  end
+
+  def test_modifiers
+    d20_mod_set = Set.new
+    3000.times do
+      roll = Dice.dx(1, 20, 20)
+      assert_true((21..40).cover?(roll))
+      d20_mod_set.add(roll)
+    end
+    assert_true(((21..40).to_set - d20_mod_set).empty?)
+
+    rolls = Dice.dx_array(5000, 20, 21, '-')
+    rolls.each do |num|
+      assert_true((-20..-1).cover?(num))
+    end
+    assert_true(((-20..-1).to_set - rolls.to_set).empty?)
+
+    rolls = Dice.dx_array(5000, 5, 20, '*')
+    rolls.each do |num|
+      assert_true((20..100).cover?(num))
+    end
+    assert_true(([20, 40, 60, 80, 100].to_set - rolls.to_set).empty?)
+  end
 end
