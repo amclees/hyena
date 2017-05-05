@@ -2,6 +2,7 @@
 
 # Serves as a container for dice rolling methods.
 module Dice
+  @dice_regex = /\A\s*(\d+)\s*d\s*(\d+)\s*(?:(\*?\s*[*+-])\s*(\d+))?\s*\z/i
   @emoji_digits = {
     '0' => ':zero:',
     '1' => ':one:',
@@ -12,19 +13,38 @@ module Dice
     '6' => ':six:',
     '7' => ':seven:',
     '8' => ':eight:',
-    '9' => ':nine:'
+    '9' => ':nine:',
+    '-' => '—'
   }
 
-  def self.dx(amount, sides)
-    return 0 if amount.zero? || sides.zero?
-    rand(amount * sides + 1 - amount) + amount
+  def self.dice_regex
+    @dice_regex
   end
 
-  def self.dx_array(amount, sides)
-    return 0 if amount.zero? || sides.zero? || sides > 10_000
+  def self.modified_roll(roll, modifier, operator)
+    operator = operator[1] ? operator[1] : operator[0]
+    case operator
+    when '+'
+      roll + modifier
+    when '-'
+      roll - modifier
+    when '*'
+      roll * modifier
+    end
+  end
+
+  def self.dx(amount, sides, modifier = 0, operator = '+')
+    return 0 if amount.zero? || sides.zero? || (operator != '+' && operator != '-')
+    rand(amount * sides + 1 - amount) + amount + (modifier * (operator == '+' ? 1 : -1))
+  end
+
+  def self.dx_array(amount, sides, modifier = 0, operator = '+')
+    return [] if amount.zero? || sides.zero? || amount > 10_000
     array = []
     (0...amount).each do
-      array.push(rand(sides) + 1)
+      roll = rand(sides) + 1
+      roll = modified_roll(roll, modifier, operator)
+      array.push(roll)
     end
     array
   end
@@ -40,15 +60,15 @@ module Dice
 
   # Returns the number of decimal digits needed to represent the number
   def self.digits(number)
-    1 + Math.log(number, 10).floor
+    1 + Math.log(number.abs, 10).floor + (number.negative? ? 1 : 0)
   end
 
-  def self.generate_roll_table(roll_array, sides)
-    max_digits = digits(sides)
+  def self.generate_roll_table(roll_array, sides, factor = 1)
+    max_digits = digits(sides * factor) + 1
     line_size = 40 / max_digits
     roll_table = '```'
     roll_array.each_with_index do |num, index|
-      roll_table += num.to_s + (' ' * (max_digits - digits(num))) + ((index + 1 % line_size).zero? && !index.zero? ? "\n" : ' ' * (1 + max_digits))
+      roll_table += num.to_s + (' ' * (max_digits - digits(num))) + ((index + 1 % line_size).zero? && !index.zero? ? "\n" : (' ' * (1 + max_digits)))
     end
     roll_table + "\n```"
   end

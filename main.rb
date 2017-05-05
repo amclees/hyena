@@ -54,27 +54,45 @@ end
 
 bot.command(:xdx, description: 'Type in `<amount>d<sides>` to roll dice.')
 
-bot.message(content: /(?:#{Regexp.quote(bot.prefix)})?(\d*)d(\d*)/i) do |msg|
-  pair = msg.content.scan(/(\d*)d(\d*)/i)[0]
-  rolls = pair[0].to_i
-  sides = pair[1].to_i
+bot.message(content: Dice.dice_regex) do |msg|
+  params = msg.content.scan(Dice.dice_regex)[0]
+  rolls = params[0].to_i
+  sides = params[1].to_i
+  operator = params[2] ? params[2] : '+'
+  # If not included, to_i will make nil into 0.
+  modifier = params[3].to_i
+
+  array_roll = (2..200).cover?(rolls) && (1..1000).cover?(sides)
+
+  roll_string = "#{rolls}d#{sides}"
+  roll_string += "#{operator}#{modifier}" unless operator == '+' && modifier.zero?
+
+  if (!array_roll && !(operator == '+' || operator == '-')) || (array_roll && (modifier.abs > 100 || (modifier.abs * sides > 1000 && operator[1] == '*')))
+    msg.respond("#{msg.author.display_name}, you can't roll dice with that modifier.")
+    HyenaLogger.log_member(msg.author, "attempted to roll a #{roll_string} but failed due to invalid modifiers.")
+    next
+  end
+
   if sides > 1_000_000_000
     msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{rolls}d#{sides} but failed due to too many sided dice.")
-  elsif (2..200).cover?(rolls) && (1..1000).cover?(sides)
-    roll_array = Dice.dx_array(rolls, sides)
+    HyenaLogger.log_member(msg.author, "attempted to roll a #{roll_string} but failed due to too many sided dice.")
+  elsif array_roll
+    apply_all = operator[0] == '*' && operator[1]
+    roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
     roll = roll_array.inject(:+)
-    roll_table = Dice.generate_roll_table(roll_array, sides)
+    roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
+    multiplying = operator[1] == '*'
+    roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
     max_message = roll_array.include?(sides) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
-    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}#{max_message}")
-    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
+    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}")
+    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
   else
-    roll = Dice.dx(rolls, sides)
-    message = "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{rolls}d#{sides}"
+    roll = Dice.dx(rolls, sides, modifier, operator)
+    message = "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}"
     message = 'You rolled a natural :one: :stuck_out_tongue_winking_eye:' if roll == 1
     message = "You rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" if roll == sides
     msg.respond(message)
-    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{rolls}d#{sides}")
+    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
   end
 end
 
