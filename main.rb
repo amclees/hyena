@@ -56,7 +56,7 @@ bot.command(:xdx, description: 'Type in `<amount>d<sides>` to roll dice.')
 
 bot.message(content: Dice.dice_regex) do |msg|
   params = msg.content.scan(Dice.dice_regex)[0]
-  rolls = params[0].to_i
+  rolls = params[0] ? params[0].to_i : 1
   sides = params[1].to_i
   operator = params[2] ? params[2] : '+'
   # If not included, to_i will make nil into 0.
