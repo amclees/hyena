@@ -83,14 +83,15 @@ bot.message(content: Dice.dice_regex) do |msg|
     roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
     multiplying = operator[1] == '*'
     roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
-    max_message = roll_array.include?(sides) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
+    max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
     msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}")
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
   else
     roll = Dice.dx(rolls, sides, modifier, operator)
     message = "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}"
-    message = 'You rolled a natural :one: :stuck_out_tongue_winking_eye:' if roll == 1
-    message = "You rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" if roll == sides
+    reversed_roll = rolls == 1 ? Dice.inverted_roll(roll, modifier, operator) : nil
+    message += "\nYou rolled a natural :one: :stuck_out_tongue_winking_eye:" if reversed_roll == 1
+    message += "\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" if reversed_roll == sides
     msg.respond(message)
     HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
   end

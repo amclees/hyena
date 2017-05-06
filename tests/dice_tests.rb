@@ -186,4 +186,16 @@ class TestDice < Test::Unit::TestCase
     end
     assert_true(([20, 40, 60, 80, 100].to_set - rolls.to_set).empty?)
   end
+
+  def test_inversion
+    rolls = [2, 4, 6, 8, 10, 12, 20, 100]
+    modifiers = (1..100)
+    operators = ['+', '-', '*']
+    5000.times do
+      modifier = rand(modifiers)
+      operator = operators.sample
+      roll = Dice.dx(1, rolls.sample)
+      assert_equal(roll, Dice.inverted_roll(Dice.modified_roll(roll, modifier, operator), modifier, operator))
+    end
+  end
 end

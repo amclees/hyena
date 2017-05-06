@@ -33,6 +33,18 @@ module Dice
     end
   end
 
+  def self.inverted_roll(modified, modifier, operator)
+    operator = operator[1] ? operator[1] : operator[0]
+    case operator
+    when '+'
+      modified - modifier
+    when '-'
+      modified + modifier
+    when '*'
+      modifier.zero? ? 0 : modified / modifier
+    end
+  end
+
   def self.dx(amount, sides, modifier = 0, operator = '+')
     return 0 if amount.zero? || sides.zero? || (operator != '+' && operator != '-')
     rand(amount * sides + 1 - amount) + amount + (modifier * (operator == '+' ? 1 : -1))
@@ -60,6 +72,7 @@ module Dice
 
   # Returns the number of decimal digits needed to represent the number
   def self.digits(number)
+    return 1 if number.zero?
     1 + Math.log(number.abs, 10).floor + (number.negative? ? 1 : 0)
   end
 
