@@ -13,8 +13,7 @@ module HyenaLogger
   @date_format_filename = '%Y-%m-%d-%H-%M-%S'
 
   def self.debug=(value)
-    @debug = value if !!value == value
-    @debug = false if value.nil?
+    @debug = value.nil? ? false : value
   end
 
   def self.save_interval=(interval)
