@@ -132,11 +132,12 @@ bot.command(:exit, help_available: false, permission_level: 100) do |msg|
 end
 
 current_game = nil
-bot.command(:playing, help_available: false, permission_level: 100) do |msg, arg1, arg2|
+bot.command(:playing, help_available: false, permission_level: 100) do |msg, arg1, arg2, arg3|
   if arg1 == 'on'
     current_game = arg2 ? arg2 : 'D&D'
+    current_game = 'D&D' if arg2 == 'sil'
     bot.game = current_game
-    if current_game == 'D&D'
+    if current_game == 'D&D' && !(arg2 == 'sil' || arg3)
       msg.respond('@everyone Session starting, get in voice!')
       server.members.each do |member|
         next if member.bot_account?
@@ -144,9 +145,9 @@ bot.command(:playing, help_available: false, permission_level: 100) do |msg, arg
       end
     end
   else
+    msg.respond('Session has ended.') if current_game == 'D&D' && arg1 != 'sil'
     current_game = nil
     bot.game = nil
-    msg.respond('Session has ended.')
   end
   nil
 end
