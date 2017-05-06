@@ -19,6 +19,9 @@ else
 end
 
 HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
+HyenaLogger.debug = CONFIG['debug'] if CONFIG.key?('debug')
+HyenaLogger.date_format = CONFIG['date_format'] if CONFIG.key?('date_format')
+HyenaLogger.date_format_filename = CONFIG['date_format_filename'] if CONFIG.key?('date_format_filename')
 
 admin_ids = CONFIG.key?('log-save-interval') ? CONFIG['admin_ids'] : []
 

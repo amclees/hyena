@@ -9,9 +9,24 @@ module HyenaLogger
   @debug = true
   @since = DateTime.now
   @save_interval = 300
+  @date_format = '%Y-%m-%d-%H:%M:%S'
+  @date_format_filename = '%Y-%m-%d-%H-%M-%S'
+
+  def self.debug=(value)
+    @debug = value if !!value == value
+    @debug = false if value.nil?
+  end
 
   def self.save_interval=(interval)
     @save_interval = interval
+  end
+
+  def self.date_format=(new_format)
+    @date_format = new_format
+  end
+
+  def self.date_format_filename=(new_format)
+    @date_format_filename = new_format
   end
 
   def self.logging
@@ -36,11 +51,11 @@ module HyenaLogger
   end
 
   def self.write_log
-    filename = DateTime.now.strftime('hyena-%d-%m-%Y-%H-%M-%S.log')
+    filename = DateTime.now.strftime("hyena-#{@date_format_filename}.log")
     puts "Writing ./logs/#{filename}"
     file = File.new("./logs/#{filename}", 'w')
-    from = @since.strftime('%d-%m-%Y-%H:%M:%S')
-    to = DateTime.now.strftime('%d-%m-%Y-%H:%M:%S')
+    from = @since.strftime(@date_format)
+    to = DateTime.now.strftime(@date_format)
     file.syswrite("This log covers the time from #{from} to #{to}\n"\
       "#{@logs.join("\n")}")
     file.close
@@ -49,7 +64,7 @@ module HyenaLogger
   end
 
   def self.log(message)
-    to_log = "[#{DateTime.now.strftime('%d-%m-%Y %H:%M:%S')}] #{message}"
+    to_log = "[#{DateTime.now.strftime(@date_format)}] #{message}"
     @logs << to_log
     puts to_log if @debug
   end
