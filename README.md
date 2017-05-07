@@ -1,5 +1,5 @@
 # Hyena
-[![Build Status](https://travis-ci.org/amclees/Hyena.svg?branch=master)](https://travis-ci.org/amclees/Hyena) [![Code Climate](https://codeclimate.com/github/amclees/Hyena/badges/gpa.svg)](https://codeclimate.com/github/amclees/Hyena) [![Test Coverage](https://codeclimate.com/github/amclees/Hyena/badges/coverage.svg)](https://codeclimate.com/github/amclees/Hyena/coverage) [![security](https://hakiri.io/github/amclees/Hyena/master.svg)](https://hakiri.io/github/amclees/Hyena/master)
+[![Build Status](https://travis-ci.org/amclees/hyena.svg?branch=master)](https://travis-ci.org/amclees/hyena) [![Code Climate](https://codeclimate.com/github/amclees/hyena/badges/gpa.svg)](https://codeclimate.com/github/amclees/hyena) [![Test Coverage](https://codeclimate.com/github/amclees/hyena/badges/coverage.svg)](https://codeclimate.com/github/amclees/hyena/coverage) [![security](https://hakiri.io/github/amclees/hyena/master.svg)](https://hakiri.io/github/amclees/hyena/master)
 
 Hyena is a Discord bot written in Ruby with [discordrb](https://github.com/meew0/discordrb) that provides tools for roleplaying games.
 
