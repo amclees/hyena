@@ -71,14 +71,14 @@ bot.message(content: Dice.dice_regex) do |msg|
   roll_string += "#{operator}#{modifier}" unless operator == '+' && modifier.zero?
 
   if (!array_roll && !(operator == '+' || operator == '-')) || (array_roll && (modifier.abs > 100 || (modifier.abs * sides > 1000 && operator[1] == '*')))
-    msg.respond("#{msg.author.display_name}, you can't roll dice with that modifier.")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{roll_string} but failed due to invalid modifiers.")
+    msg.respond("#{msg.author.username}, you can't roll dice with that modifier.")
+    HyenaLogger.log_user(msg.author, "attempted to roll a #{roll_string} but failed due to invalid modifiers.")
     next
   end
 
   if sides > 1_000_000_000
-    msg.respond("#{msg.author.display_name}, you can't roll dice with that many sides!")
-    HyenaLogger.log_member(msg.author, "attempted to roll a #{roll_string} but failed due to too many sided dice.")
+    msg.respond("#{msg.author.username}, you can't roll dice with that many sides!")
+    HyenaLogger.log_user(msg.author, "attempted to roll a #{roll_string} but failed due to too many sided dice.")
   elsif array_roll
     apply_all = operator[0] == '*' && operator[1]
     roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
@@ -87,21 +87,21 @@ bot.message(content: Dice.dice_regex) do |msg|
     multiplying = operator[1] == '*'
     roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
     max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
-    msg.respond("#{roll_table}\n#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}")
-    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
+    msg.respond("#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}")
+    HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
   else
     roll = Dice.dx(rolls, sides, modifier, operator)
-    message = "#{msg.author.display_name}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}"
+    message = "#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}"
     reversed_roll = rolls == 1 ? Dice.inverted_roll(roll, modifier, operator) : nil
     message += "\nYou rolled a natural :one: :stuck_out_tongue_winking_eye:" if reversed_roll == 1
     message += "\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" if reversed_roll == sides
     msg.respond(message)
-    HyenaLogger.log("#{msg.author.display_name} (id: #{msg.author.id}) rolled a #{roll} on a #{roll_string}")
+    HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
   end
 end
 
 bot.message do |msg|
-  HyenaLogger.log_member(msg.author, "said #{msg.content}")
+  HyenaLogger.log_user(msg.author, "said #{msg.content}")
 end
 
 def game_message(member)
@@ -128,7 +128,7 @@ def save_and_exit(bot)
 end
 
 bot.command(:exit, help_available: false, permission_level: 100) do |msg|
-  HyenaLogger.log_member(msg.author, 'issued command to exit.')
+  HyenaLogger.log_user(msg.author, 'issued command to exit.')
   msg.respond('Saving and exiting.')
   HyenaLogger.log('Sent exit message.')
   save_and_exit(bot)
@@ -158,7 +158,7 @@ end
 bot.playing do |event|
   if current_game == 'D&D' && event.game
     bot.send_message(channel_general.id, game_message(member))
-    HyenaLogger.log_member(member, "was warned not to play #{event.game}")
+    HyenaLogger.log_user(member, "was warned not to play #{event.game}")
   end
 end
 

@@ -99,10 +99,10 @@ Hyena will automatically mention everyone, including members playing games speci
 * Treasure splitting calculator
 * Treasure generator
 * Support for playing audio files in voice
+* Multiserver support
 
 #### Short-term
 * Support for names with spaces in combat scenarios
-* Direct messaging and multiserver support
 * Discord-based viewing of logs
 * Commands for setting bot status
 

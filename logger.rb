@@ -69,8 +69,9 @@ module HyenaLogger
   end
 
   # action: <verb (past tense)> <noun phrase>
-  def self.log_member(member, action)
-    log("#{member.display_name} (id: #{member.id}) #{action}")
+  def self.log_user(user, action)
+    display_name = user.respond_to?(:display_name) ? user.display_name + ' ' : ''
+    log("#{user.username}\##{user.discriminator} #{display_name}(id: #{user.id}) #{action}")
   end
 
   private_class_method :write_log
