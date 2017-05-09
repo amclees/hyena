@@ -87,8 +87,14 @@ bot.message(content: Dice.dice_regex) do |msg|
     multiplying = operator[1] == '*'
     roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
     max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
-    msg.respond("#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}")
-    HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
+    response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}"
+    if response.length <= 2000
+      msg.respond(response)
+      HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
+    else
+      msg.respond("Your roll table was too big for Discord to display. Please try again with a different roll.")
+      HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}, but the message was over 2000 characters.")
+    end
   else
     roll = Dice.dx(rolls, sides, modifier, operator)
     message = "#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}"
