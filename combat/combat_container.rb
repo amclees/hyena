@@ -19,25 +19,34 @@ module Combat
     @scenario_hash
   end
 
+  def self.valid_name?(name)
+    %r{\A[^\/\\\?%\*:|"<>]+\z}.match(name)
+  end
+
+  def self.file_regex(user_id)
+    %r{\A#{user_id}_([^\/\\\?%\*:|"<>]+).json\z}
+  end
+
   command(
     :combat,
     description: "Allows access to combat functions (Try `#{@prefix}combat help` for more details).",
     permission_level: 0
-  ) do |msg, action, arg1, arg2, arg3|
+  ) do |msg, action, *args|
     HyenaLogger.log_user(msg.author, 'issued combat command.')
     user_id = msg.author.id
+    name = args.join(' ')
     if action == 'help'
       msg.respond(
         <<~HELP_TEXT
-          The `combat` commands allows you to create and save combat scenarios for easy initiative handling. Valid names consist of letters, numbers, and underscores. It can be used as follows:
+          The `combat` commands allows you to create and save combat scenarios for easy initiative handling. Valid names consist of letters, numbers, spaces, and underscores. It can be used as follows:
             `new <name>` - Start a new combat scenario with the specified name, saving and leaving your old one.
             `rename <new name>` or `mv <new name>` - Rename the current combat scenario
             `open <name>` or `op <name>` - Open the combat scenario with the specified name
             `delete` or `del` - Permanently delete your active scenario
             `scenarios` or `ls` - View a list of all your saved scenarios
             `close` - Closes and saves the current combat scenario
-            `add <name> <initiative> [\# of duplicates (default 1)]` - Adds characters to your scenario
-            `edit <id> <new name> <new initiative>` - Assigns the specified name and initiative to an existing combatant
+            `add <initiative> <name> [\# of duplicates (default 1)]` - Adds characters to your scenario
+            `edit <id> <new initiative> <new name>` - Assigns the specified name and initiative to an existing combatant
             `remove <id>` or `rm <id>` - Removes the specified combatant from combat
             `run` or `r` - Proceed your combat scenario to the next round and display turn order
             `status` or `stat` - Print the name and current status of your combat scenario
@@ -45,42 +54,42 @@ module Combat
       )
       HyenaLogger.log_user(msg.author, 'listed combat command options.')
     elsif action == 'new'
-      if arg1 =~ /\A\w+\z/
+      if valid_name?(name)
         old_manager = @scenario_hash[user_id]
         JSONManager.write_json('scenarios', old_manager.json_filename, old_manager.to_json) if old_manager
-        new_manager = CombatManager.new arg1, [], user_id
+        new_manager = CombatManager.new name, [], user_id
         @scenario_hash[user_id] = new_manager
-        msg.respond("Successfully created new scenario called: #{arg1}")
-        HyenaLogger.log_user(msg.author, "created new combat scenario called: #{arg1}")
+        msg.respond("Successfully created new scenario called: #{name}")
+        HyenaLogger.log_user(msg.author, "created new combat scenario called: #{name}")
         JSONManager.write_json('scenarios', new_manager.json_filename, new_manager.to_json)
       else
-        msg.respond("#{msg.author.username}, \"#{arg1}\" is not a valid name.")
-        HyenaLogger.log_user(msg.author, "attempted and failed to created an improperly named new combat scenario called: #{arg1}")
+        msg.respond("#{msg.author.username}, \"#{name}\" is not a valid name.")
+        HyenaLogger.log_user(msg.author, "attempted and failed to created an improperly named new combat scenario called: #{name}")
       end
     elsif action == 'rename' || action == 'mv'
       manager = @scenario_hash[user_id]
       if !manager
         msg.respond("#{msg.author.username}, you do not have a combat scenario open.")
         HyenaLogger.log_user(msg.author, 'attempted to rename their nonexistant combat scenario.')
-      elsif arg1 =~ /\A\w+\z/
+      elsif valid_name?(name)
         JSONManager.delete_json('scenarios', manager.json_filename)
-        manager.name = arg1
-        msg.respond("Successfully renamed scenario to: #{arg1}")
-        HyenaLogger.log_user(msg.author, "renamed their combat scenario called: #{arg1}")
+        manager.name = name
+        msg.respond("Successfully renamed scenario to: #{name}")
+        HyenaLogger.log_user(msg.author, "renamed their combat scenario called: #{name}")
         JSONManager.write_json('scenarios', manager.json_filename, manager.to_json)
       else
-        msg.respond("#{msg.author.username}, \"#{arg1}\" is not a valid name.")
-        HyenaLogger.log_user(msg.author, "attempted and failed to rename their active combat scenario to the invalid name: #{arg1}")
+        msg.respond("#{msg.author.username}, \"#{name}\" is not a valid name.")
+        HyenaLogger.log_user(msg.author, "attempted and failed to rename their active combat scenario to the invalid name: #{name}")
       end
     elsif action == 'open' || action == 'op'
-      if arg1 =~ /\A\w+\z/ && JSONManager.exist?('scenarios', "#{user_id}_#{arg1}.json")
+      if valid_name?(name) && JSONManager.exist?('scenarios', "#{user_id}_#{name}.json")
         old_manager = @scenario_hash[user_id]
         JSONManager.write_json('scenarios', old_manager.json_filename, old_manager.to_json) if old_manager
-        @scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json('scenarios', "#{user_id}_#{arg1}.json"))
-        msg.respond("#{msg.author.username}, you have opened #{arg1}.")
-        HyenaLogger.log_user(msg.author, "opened the scenario #{arg1}.")
+        @scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json('scenarios', "#{user_id}_#{name}.json"))
+        msg.respond("#{msg.author.username}, you have opened #{name}.")
+        HyenaLogger.log_user(msg.author, "opened the scenario #{name}.")
       else
-        msg.respond("#{msg.author.username}, \"#{arg1}\" is not a valid scenario.")
+        msg.respond("#{msg.author.username}, \"#{name}\" is not a scenario.")
         HyenaLogger.log_user(msg.author, 'attempted to open a nonexistant scenario.')
       end
     elsif action == 'delete' || action == 'del'
@@ -96,8 +105,7 @@ module Combat
         HyenaLogger.log_user(msg.author, 'attempted to close their scenario but had none open.')
       end
     elsif action == 'scenarios' || action == 'ls'
-      file_regex = /\A#{user_id}_(\w+).json\z/
-      names = JSONManager.search('scenarios', file_regex)
+      names = JSONManager.search('scenarios', file_regex(user_id))
       msg.respond("#{msg.author.username} has the following scenarios:```\n#{names.join("\n")}```")
       HyenaLogger.log_user(msg.author, 'listed their scenarios.')
     elsif action == 'close'
@@ -114,11 +122,23 @@ module Combat
     elsif action == 'add'
       manager = @scenario_hash[user_id]
       if manager
-        if arg1 =~ /\A\w+\z/ && arg2 =~ /\A-?\d+\z/
-          amount = arg3 =~ /\A\d+\z/ ? arg3.to_i : 1
-          amount = 1 if amount > 10
+        if args.length < 2
+          msg.respond('Please input the initiative and name.')
+          HyenaLogger.log_user(msg.author, 'attempted to add a combatant to their scenario but gave invalid arguments.')
+          return
+        end
+        initiative = args.shift
+        last_arg = args.pop
+        amount = 1
+        if last_arg =~ /\d+/
+          amount = last_arg.to_i unless last_arg.to_i > 10
+        else
+          args.push(last_arg)
+        end
+        name = args.join(' ')
+        if valid_name?(name) && initiative =~ /\A-?\d+\z/
           amount.times do
-            manager.combatants.push(Combatant.new(arg1, arg2.to_i))
+            manager.combatants.push(Combatant.new(name, initiative.to_i))
           end
           msg.respond("#{msg.author.username}, your combatants have been added.")
           HyenaLogger.log_user(msg.author, 'added combatants to their scenario.')
@@ -132,13 +152,16 @@ module Combat
       end
     elsif action == 'edit'
       manager = @scenario_hash[user_id]
+      id_s = args.shift
+      initiative_s = args.shift
+      name = args.join(' ')
       if manager
-        if arg1 =~ /\A\d+\z/ && arg2 =~ /\A\w+\z/ && arg3 =~ /\A-?\d+\z/
-          id = arg1.to_i
+        if id_s =~ /\A\d+\z/ && initiative_s =~ /\A-?\d+\z/ && valid_name?(name)
+          id = id_s.to_i
           popped = manager.pop_combatant(id)
           if popped
-            popped.name = arg2
-            popped.initiative = arg3.to_i
+            popped.name = name
+            popped.initiative = initiative_s.to_i
             manager.combatants.push(popped)
             msg.respond("#{msg.author.username}, your modifications have been made.")
             HyenaLogger.log_user(msg.author, 'modified combatants in their scenario.')
@@ -157,8 +180,8 @@ module Combat
     elsif action == 'remove' || action == 'rm'
       manager = @scenario_hash[user_id]
       if manager
-        if arg1 =~ /\A\d+\z/
-          id = arg1.to_i
+        if args[0] =~ /\A\d+\z/
+          id = args[0].to_i
           if manager.pop_combatant(id)
             msg.respond("#{msg.author.username}, your deletion has been made.")
             HyenaLogger.log_user(msg.author, 'deleted a combatant in their scenario.')
