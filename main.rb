@@ -92,7 +92,7 @@ bot.message(content: Dice.dice_regex) do |msg|
       msg.respond(response)
       HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
     else
-      msg.respond("Your roll table was too big for Discord to display. Please try again with a different roll.")
+      msg.respond('Your roll table was too big for Discord to display. Please try again with a different roll.')
       HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}, but the message was over 2000 characters.")
     end
   else
