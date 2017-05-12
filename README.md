@@ -58,7 +58,7 @@ of multiple combat scenarios.
 
 > Hyena: Successfully created new scenario called: dwarven_embassy
 
-> amclees: .combat add Dwarf 1 7
+> amclees: .combat add 1 Dwarf 7
 
 > Hyena: amclees, your combatants have been added.
 
@@ -102,7 +102,6 @@ Hyena will automatically mention everyone, including members playing games speci
 * Multiserver support
 
 #### Short-term
-* Support for names with spaces in combat scenarios
 * Discord-based viewing of logs
 * Commands for setting bot status
 
