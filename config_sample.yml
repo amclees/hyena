@@ -9,6 +9,8 @@ debug: false
 date_format: '%Y-%m-%d-%H:%M:%S'
 # Filename date format is used for filenames including dates.
 date_format_filename: '%Y-%m-%d-%H-%M-%S'
+# Prefix is used to indicate a message is a command.
+prefix: '.'
 # Admins will have permissions for all commands.
 admin_ids:
   - <user id>
