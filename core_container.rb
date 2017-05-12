@@ -92,4 +92,45 @@ module Core
     end
     nil
   end
+
+  command(:ignore, help_available: false, permission_level: 100) do |msg, arg1|
+    server = msg.author.respond_to?(:server) ? msg.author.server : nil
+    if server
+      to_ignore = nil
+      server.members.each do |member|
+        if member.id.to_s == arg1
+          to_ignore = member
+          break
+        end
+      end
+      if to_ignore
+        if to_ignore.ignored?
+          @bot.unignore(to_ignore)
+        else
+          @bot.ignore(to_ignore)
+        end
+      end
+    end
+    nil
+  end
+
+  command(%i[online on], help_available: false, permission_level: 100) do
+    @bot.online
+    nil
+  end
+
+  command(:dnd, help_available: false, permission_level: 100) do
+    @bot.dnd
+    nil
+  end
+
+  command(:invisible, help_available: false, permission_level: 100) do
+    @bot.invisible
+    nil
+  end
+
+  command(:away, help_available: false, permission_level: 100) do
+    @bot.away
+    nil
+  end
 end

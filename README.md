@@ -103,7 +103,6 @@ Hyena will automatically mention everyone, including members playing games speci
 
 #### Short-term
 * Discord-based viewing of logs
-* Commands for setting bot status
 
 
 More features will come after these planned features, Hyena is still early in development.
