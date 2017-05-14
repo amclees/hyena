@@ -70,6 +70,7 @@ module Core
   end
 
   command(:intro, description: 'Ask hyena to introduce itself.') do |msg|
+    HyenaLogger.log_user(msg.author, 'asked hyena to introduce itself')
     msg.respond(@hyena_intro)
   end
 
@@ -114,12 +115,20 @@ module Core
         end
       end
       if to_ignore
-        if to_ignore.ignored?
-          @bot.unignore(to_ignore)
+        if @bot.ignored?(to_ignore)
+          @bot.unignore_user(to_ignore)
+          msg.respond('Successfully unignored')
+          HyenaLogger.log_user(msg.author, "removed #{arg1} from ignore list.")
         else
-          @bot.ignore(to_ignore)
+          @bot.ignore_user(to_ignore)
+          msg.respond('Successfully ignored')
+          HyenaLogger.log_user(msg.author, "added #{arg1} to ignore list.")
         end
+      else
+        msg.respond('That was not a valid user, please try again.')
       end
+    else
+      msg.respond('Try again after connecting to a server.')
     end
     nil
   end
@@ -135,8 +144,10 @@ module Core
       end
       log_string = to_display.join("\n")
       msg.respond("Logs - Page #{page_number + 1} of #{(logs.length / page_size) + 1}\n```\n#{log_string}\n```")
+      HyenaLogger.log_user(msg.author, "displayed pages #{page_number + 1} through #{(logs.length / page_size) + 1} of logs")
     else
       msg.respond('That is not a valid page number')
+      HyenaLogger.log_user(msg.author, 'tried to view logs but gave an invalid page number')
     end
   end
 
@@ -153,6 +164,7 @@ module Core
       log_number -= 1
       filename = logs[log_number]
       msg.respond("Log \##{log_number + 1}")
+      HyenaLogger.log_user(msg.author, "retrieved log #{filename}")
       msg.channel.send_file(File.new("./logs/#{filename}"))
     else
       msg.respond('That is not a valid log.')
@@ -161,21 +173,25 @@ module Core
 
   command(%i[online on], help_available: false, permission_level: 100) do
     @bot.online
+    HyenaLogger.log_user(msg.author, 'set hyena status to online')
     nil
   end
 
   command(:dnd, help_available: false, permission_level: 100) do
     @bot.dnd
+    HyenaLogger.log_user(msg.author, 'set hyena status to do not disturb')
     nil
   end
 
   command(:invisible, help_available: false, permission_level: 100) do
     @bot.invisible
+    HyenaLogger.log_user(msg.author, 'set hyena status to invisible')
     nil
   end
 
   command(:away, help_available: false, permission_level: 100) do
     @bot.away
+    HyenaLogger.log_user(msg.author, 'set hyena status to away')
     nil
   end
 end
