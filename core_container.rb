@@ -40,7 +40,7 @@ module Core
     "#{member.mention} Stop playing #{member.game} and join the session."
   end
 
-  def self.save_and_exit(bot)
+  def self.save
     scenario_hash = Combat.scenario_hash
     scenario_hash.keys.each do |key|
       combat_manager = scenario_hash[key]
@@ -54,8 +54,12 @@ module Core
     end
     sleep(0.1) while HyenaLogger.logging
     HyenaLogger.save
+  end
+
+  def self.save_and_exit
+    save
     # Causes offline status to immediately display.
-    bot.invisible
+    @bot.invisible
     exit
   end
 
@@ -80,7 +84,13 @@ module Core
     HyenaLogger.log_user(msg.author, 'issued command to exit.')
     msg.respond('Saving and exiting.')
     HyenaLogger.log('Sent exit message.')
-    save_and_exit(@bot)
+    save_and_exit
+  end
+
+  command(:save, help_available: false, permission_level: 100) do |msg|
+    save
+    HyenaLogger.log_user(msg.author, 'saved all data.')
+    msg.respond('Saved.')
   end
 
   command(:playing, help_available: false, permission_level: 100) do |msg, arg1, arg2, arg3|
