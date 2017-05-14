@@ -20,8 +20,16 @@ module HyenaLogger
     @save_interval = interval
   end
 
+  def self.date_format
+    @date_format
+  end
+
   def self.date_format=(new_format)
     @date_format = new_format
+  end
+
+  def self.date_format_filename
+    @date_format_filename
   end
 
   def self.date_format_filename=(new_format)

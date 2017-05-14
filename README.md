@@ -91,18 +91,16 @@ Hyena will automatically mention everyone, including members playing games speci
 
 ## Planned Features
 #### Long-term
-* Player monthly budget and expense planning
 * Locational variation handler for prices
 * Encounter generation
 * Player data and skill checks
 * XP calculation
 * Treasure splitting calculator
 * Treasure generator
-* Support for playing audio files in voice
 * Multiserver support
 
 #### Short-term
-* Discord-based viewing of logs
-
+* Support for playing audio files in voice
+* Player monthly budget and expense planning
 
 More features will come after these planned features, Hyena is still early in development.

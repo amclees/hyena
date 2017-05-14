@@ -59,6 +59,16 @@ module Core
     exit
   end
 
+  def self.list_logs
+    regex = Regexp.new(HyenaLogger.date_format_filename.gsub(/%\w/, '\d+'))
+    matched = []
+    Dir.entries('./logs').each do |filename|
+      match_data = regex.match(filename)
+      matched.push(filename) if match_data
+    end
+    matched.sort.reverse
+  end
+
   command(:intro, description: 'Ask hyena to introduce itself.') do |msg|
     msg.respond(@hyena_intro)
   end
@@ -112,6 +122,41 @@ module Core
       end
     end
     nil
+  end
+
+  command(:logs, help_available: false, permission_level: 100) do |msg, arg1|
+    logs = list_logs
+    page_number = arg1 ? arg1.to_i : 1
+    page_number -= 1 if page_number
+    page_size = 10
+    if page_number && page_number >= 0 && page_number * page_size < logs.length
+      to_display = logs.slice(page_number * page_size, 10).each_with_index.map do |filename, index|
+        "Log \##{index + (page_size * page_number) + 1} #{filename}"
+      end
+      log_string = to_display.join("\n")
+      msg.respond("Logs - Page #{page_number + 1} of #{(logs.length / page_size) + 1}\n```\n#{log_string}\n```")
+    else
+      msg.respond('That is not a valid page number')
+    end
+  end
+
+  command(
+    :log,
+    help_available: false,
+    permission_level: 100,
+    bucket: :file_cmd,
+    rate_limit_message: 'Try again in %time% more seconds.'
+  ) do |msg, arg1|
+    logs = list_logs
+    log_number = arg1.to_i
+    if log_number && log_number.positive? && log_number <= logs.length
+      log_number -= 1
+      filename = logs[log_number]
+      msg.respond("Log \##{log_number + 1}")
+      msg.channel.send_file(File.new("./logs/#{filename}"))
+    else
+      msg.respond('That is not a valid log.')
+    end
   end
 
   command(%i[online on], help_available: false, permission_level: 100) do

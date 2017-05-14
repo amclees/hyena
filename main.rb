@@ -37,7 +37,8 @@ JSONManager.init('data')
 
 puts "Invite URL is #{bot.invite_url}."
 
-bot.bucket :file_cmd, limit: 3, time_span: 120, delay: 5
+# File commands are limited to admins, so abuse of them should be limited.
+bot.bucket :file_cmd, limit: 3, time_span: 15, delay: 5
 
 DiceCommands.init(bot)
 
