@@ -153,8 +153,9 @@ module Core
         "Log \##{index + (page_size * page_number) + 1} #{filename}"
       end
       log_string = to_display.join("\n")
-      msg.respond("Logs - Page #{page_number + 1} of #{(logs.length / page_size) + 1}\n```\n#{log_string}\n```")
-      HyenaLogger.log_user(msg.author, "displayed pages #{page_number + 1} through #{(logs.length / page_size) + 1} of logs")
+      total_pages = (logs.length.to_f / page_size.to_f).ceil
+      msg.respond("Logs - Page #{page_number + 1} of #{total_pages}\n```\n#{log_string}\n```")
+      HyenaLogger.log_user(msg.author, "displayed pages #{page_number + 1} through #{total_pages} of logs")
     else
       msg.respond('That is not a valid page number')
       HyenaLogger.log_user(msg.author, 'tried to view logs but gave an invalid page number')
