@@ -6,6 +6,7 @@ require_relative './logger.rb'
 require_relative './core_container.rb'
 require_relative './dice_container.rb'
 require_relative './combat/combat_container.rb'
+require_relative './world/world_container.rb'
 
 HyenaLogger.log('Started running main.')
 
@@ -40,10 +41,13 @@ puts "Invite URL is #{bot.invite_url}."
 # File commands are limited to admins, so abuse of them should be limited.
 bot.bucket :file_cmd, limit: 3, time_span: 15, delay: 5
 
-DiceCommands.init(bot)
+DiceContainer.init(bot)
 
 Combat.init(bot.prefix)
 bot.include! Combat
+
+WorldContainer.init(bot, CONFIG)
+bot.include! WorldContainer
 
 Core.init(bot, CONFIG)
 bot.include! Core

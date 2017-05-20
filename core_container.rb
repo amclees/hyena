@@ -189,25 +189,25 @@ module Core
     end
   end
 
-  command(%i[online on], help_available: false, permission_level: 100) do
+  command(%i[online on], help_available: false, permission_level: 100) do |msg|
     @bot.online
     HyenaLogger.log_user(msg.author, 'set hyena status to online')
     nil
   end
 
-  command(:dnd, help_available: false, permission_level: 100) do
+  command(:dnd, help_available: false, permission_level: 100) do |msg|
     @bot.dnd
     HyenaLogger.log_user(msg.author, 'set hyena status to do not disturb')
     nil
   end
 
-  command(:invisible, help_available: false, permission_level: 100) do
+  command(:invisible, help_available: false, permission_level: 100) do |msg|
     @bot.invisible
     HyenaLogger.log_user(msg.author, 'set hyena status to invisible')
     nil
   end
 
-  command(:away, help_available: false, permission_level: 100) do
+  command(:away, help_available: false, permission_level: 100) do |msg|
     @bot.away
     HyenaLogger.log_user(msg.author, 'set hyena status to away')
     nil

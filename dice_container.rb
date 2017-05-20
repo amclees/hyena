@@ -3,7 +3,7 @@
 require_relative './dice.rb'
 
 # Dice Command Handler
-module DiceCommands
+module DiceContainer
   extend Discordrb::Commands::CommandContainer
 
   def self.init(bot)
