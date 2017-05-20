@@ -12,6 +12,7 @@ module Core
         You can also use the modifiers `+`, `-`, or `*`. If you put an extra `*` before another modifier it will be applied to each roll (rather than their sum).
         For example, `1d20 + 5`, `4d8 *- 3`, or `20d6 ** 2`.
   DICE_DESCRIPTION
+  @mimic_hash = {}
 
   def self.init(bot, config)
     @bot = bot
@@ -26,6 +27,12 @@ module Core
 
     @bot.message do |msg|
       HyenaLogger.log_user(msg.author, "said #{msg.content}")
+    end
+
+    @bot.message do |msg|
+      if @mimic_hash.key?(msg.author.id) && @mimic_hash[msg.author.id]
+        msg.respond(msg.content)
+      end
     end
 
     @bot.playing do |event|
@@ -203,6 +210,15 @@ module Core
   command(:away, help_available: false, permission_level: 100) do
     @bot.away
     HyenaLogger.log_user(msg.author, 'set hyena status to away')
+    nil
+  end
+
+  command(:mimic, help_available: false, permission_level: 100) do |msg, arg1|
+    arg1 = arg1.to_i
+    return if arg1.zero?
+    @mimic_hash[arg1] = @mimic_hash.key?(arg1) ? !@mimic_hash[arg1] : true
+    HyenaLogger.log_user(msg.author, "set hyena to#{@mimic_hash[arg1] ? '' : ' not'} mimic id #{arg1}")
+    msg.respond("Toggling mimic on #{arg1}")
     nil
   end
 end
