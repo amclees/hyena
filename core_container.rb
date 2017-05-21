@@ -36,7 +36,7 @@ module Core
     end
 
     @bot.playing do |event|
-      if current_game == 'D&D' && event.game
+      if @current_game == 'D&D' && event.game
         @bot.send_message(channel_general.id, game_message(member))
         HyenaLogger.log_user(member, "was warned not to play #{event.game}")
       end
