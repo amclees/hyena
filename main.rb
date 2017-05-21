@@ -1,14 +1,6 @@
 # frozen_string_literal: false
 
-require 'discordrb'
 require 'yaml'
-require_relative './logger.rb'
-require_relative './core_container.rb'
-require_relative './dice_container.rb'
-require_relative './combat/combat_container.rb'
-require_relative './world/world_container.rb'
-
-HyenaLogger.log('Started running main.')
 
 if File.exist?('config.yml')
   CONFIG = YAML.load_file('config.yml')
@@ -18,6 +10,17 @@ else
   puts 'No config.yml or config.yaml found, please create one with your bot_token and client_id.'
   exit
 end
+
+::RBNACL_LIBSODIUM_GEM_LIB_PATH = CONFIG['libsodium-path'] if CONFIG.key?('libsodium-path')
+require 'discordrb'
+
+require_relative './logger.rb'
+require_relative './core_container.rb'
+require_relative './dice_container.rb'
+require_relative './combat/combat_container.rb'
+require_relative './world/world_container.rb'
+
+HyenaLogger.log('Started running main.')
 
 HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
 HyenaLogger.debug = CONFIG['debug'] if CONFIG.key?('debug')
