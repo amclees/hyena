@@ -2,6 +2,8 @@
 
 # Handles numerical values of different parts of a currency system (default is the standard D&D system).
 class CurrencySystem
+  attr_reader :currency_value
+
   def initialize(currency_hash = {
     cp: 1,
     sp: 10,
