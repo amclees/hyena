@@ -12,9 +12,9 @@ class CalendarTest < Test::Unit::TestCase
   def test_time
     calendar = Calendar.new(Date.new(1002, 2, 3))
     calendar.advance_time(5)
-    assert_true(calendar.current_date === Date.new(1002, 2, 8))
+    assert(calendar.current_date === Date.new(1002, 2, 8))
     calendar.advance_time(365 * 1000)
-    assert_true(calendar.current_date === Date.new(2001, 6, 16))
+    assert(calendar.current_date === Date.new(2001, 6, 16))
   end
 
   def test_handlers

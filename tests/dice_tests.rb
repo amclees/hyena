@@ -13,33 +13,33 @@ class TestDice < Test::Unit::TestCase
     d20_set = Set.new
     3000.times do
       roll = Dice.dx(1, 20)
-      assert_true((1..20).cover?(roll))
+      assert((1..20).cover?(roll))
       d20_set.add(roll)
     end
-    assert_true(((1..20).to_set - d20_set).empty?)
+    assert(((1..20).to_set - d20_set).empty?)
 
     d20_5_set = Set.new
     20_000.times do
       roll = Dice.dx(5, 20)
-      assert_true((5..100).cover?(roll))
+      assert((5..100).cover?(roll))
       d20_5_set.add(roll)
     end
-    assert_true(((5..100).to_set - d20_5_set).empty?)
+    assert(((5..100).to_set - d20_5_set).empty?)
 
     100.times do
-      assert_true((1..6).cover?(Dice.dx(1, 6)))
+      assert((1..6).cover?(Dice.dx(1, 6)))
     end
 
     100.times do
-      assert_true((1..8).cover?(Dice.dx(1, 8)))
+      assert((1..8).cover?(Dice.dx(1, 8)))
     end
 
     100.times do
-      assert_true((1..2).cover?(Dice.dx(1, 2)))
+      assert((1..2).cover?(Dice.dx(1, 2)))
     end
 
     10_000.times do
-      assert_true((1..100).cover?(Dice.dx(1, 100)))
+      assert((1..100).cover?(Dice.dx(1, 100)))
     end
   end
 
@@ -51,31 +51,31 @@ class TestDice < Test::Unit::TestCase
     d100 = Dice.dx_array(10_000, 100)
 
     # Coverage testing
-    assert_true(((1..2).to_set - d2.to_set).empty?)
-    assert_true(((1..6).to_set - d6.to_set).empty?)
-    assert_true(((1..10).to_set - d10.to_set).empty?)
-    assert_true(((1..20).to_set - d20.to_set).empty?)
-    assert_true(((1..100).to_set - d100.to_set).empty?)
+    assert(((1..2).to_set - d2.to_set).empty?)
+    assert(((1..6).to_set - d6.to_set).empty?)
+    assert(((1..10).to_set - d10.to_set).empty?)
+    assert(((1..20).to_set - d20.to_set).empty?)
+    assert(((1..100).to_set - d100.to_set).empty?)
 
     # Bounds testing
     d2.each do |roll|
-      assert_true((1..2).cover?(roll))
+      assert((1..2).cover?(roll))
     end
 
     d6.each do |roll|
-      assert_true((1..6).cover?(roll))
+      assert((1..6).cover?(roll))
     end
 
     d10.each do |roll|
-      assert_true((1..10).cover?(roll))
+      assert((1..10).cover?(roll))
     end
 
     d20.each do |roll|
-      assert_true((1..20).cover?(roll))
+      assert((1..20).cover?(roll))
     end
 
     d100.each do |roll|
-      assert_true((1..100).cover?(roll))
+      assert((1..100).cover?(roll))
     end
   end
 
@@ -102,7 +102,7 @@ class TestDice < Test::Unit::TestCase
       (1..1000).each do |sides|
         next unless sides % modulus == congruent_sides
         roll_table = Dice.generate_roll_table(Dice.dx_array(rolls, sides), sides)
-        assert_true(roll_table.length <= 2000)
+        assert(roll_table.length <= 2000)
       end
     end
   end
@@ -113,45 +113,45 @@ class TestDice < Test::Unit::TestCase
       rolls = rand(200) + 1
       expected_range = (rolls..(rolls * sides))
       value = eval("Dice.d#{sides}x(#{rolls})")
-      assert_true(expected_range.cover?(value))
+      assert(expected_range.cover?(value))
     end
   end
 
   def test_meta_methods_manual
     25.times do
-      assert_true((1..2).cover?(Dice.d2))
+      assert((1..2).cover?(Dice.d2))
     end
 
     50.times do
-      assert_true((1..4).cover?(Dice.d4))
+      assert((1..4).cover?(Dice.d4))
     end
 
     100.times do
-      assert_true((1..6).cover?(Dice.d6))
+      assert((1..6).cover?(Dice.d6))
     end
 
     1000.times do
-      assert_true((1..8).cover?(Dice.d8))
+      assert((1..8).cover?(Dice.d8))
     end
 
     1000.times do
-      assert_true((1..10).cover?(Dice.d10))
+      assert((1..10).cover?(Dice.d10))
     end
 
     1000.times do
-      assert_true((1..12).cover?(Dice.d12))
+      assert((1..12).cover?(Dice.d12))
     end
 
     1000.times do
-      assert_true((1..20).cover?(Dice.d20))
+      assert((1..20).cover?(Dice.d20))
     end
 
     10_000.times do
-      assert_true((1..100).cover?(Dice.d100))
+      assert((1..100).cover?(Dice.d100))
     end
 
     10_000.times do
-      assert_true((3..60).cover?(Dice.d20x(3)))
+      assert((3..60).cover?(Dice.d20x(3)))
     end
   end
 
@@ -169,22 +169,22 @@ class TestDice < Test::Unit::TestCase
     d20_mod_set = Set.new
     3000.times do
       roll = Dice.dx(1, 20, 20)
-      assert_true((21..40).cover?(roll))
+      assert((21..40).cover?(roll))
       d20_mod_set.add(roll)
     end
-    assert_true(((21..40).to_set - d20_mod_set).empty?)
+    assert(((21..40).to_set - d20_mod_set).empty?)
 
     rolls = Dice.dx_array(5000, 20, 21, '-')
     rolls.each do |num|
-      assert_true((-20..-1).cover?(num))
+      assert((-20..-1).cover?(num))
     end
-    assert_true(((-20..-1).to_set - rolls.to_set).empty?)
+    assert(((-20..-1).to_set - rolls.to_set).empty?)
 
     rolls = Dice.dx_array(5000, 5, 20, '*')
     rolls.each do |num|
-      assert_true((20..100).cover?(num))
+      assert((20..100).cover?(num))
     end
-    assert_true(([20, 40, 60, 80, 100].to_set - rolls.to_set).empty?)
+    assert(([20, 40, 60, 80, 100].to_set - rolls.to_set).empty?)
   end
 
   def test_inversion

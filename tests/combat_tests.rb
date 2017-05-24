@@ -20,15 +20,15 @@ class CombatantTest < Test::Unit::TestCase
     (0...tests_amount).each do
       c1_roll = c1.roll_initiative
       c2_roll = c2.roll_initiative
-      assert_true((13..33).cover?(c1_roll))
-      assert_true((0..20).cover?(c2_roll))
+      assert((13..33).cover?(c1_roll))
+      assert((0..20).cover?(c2_roll))
       c1_avg += c1_roll
       c2_avg += c2_roll
     end
     c1_avg /= tests_amount
     c2_avg /= tests_amount
-    assert_true((20..25).cover?(c1_avg))
-    assert_true((7..12).cover?(c2_avg))
+    assert((20..25).cover?(c1_avg))
+    assert((7..12).cover?(c2_avg))
     puts "#{c1} avg #{c1_avg}"
     puts "#{c2} avg #{c2_avg}"
   end
@@ -107,7 +107,7 @@ class CombatManagerTest < Test::Unit::TestCase
     assert_equal(c1, combat_manager.pop_combatant(c1.id))
     assert_equal(1, combat_manager.combatants.length)
     assert_equal(c2, combat_manager.pop_combatant(c2.id))
-    assert_true(combat_manager.combatants.empty?)
+    assert(combat_manager.combatants.empty?)
   end
 
   def test_manager_json
@@ -123,13 +123,13 @@ class CombatManagerTest < Test::Unit::TestCase
       manager_from_json.next_round
       assert_equal(i, manager_from_json.round)
     end
-    assert_true(!manager_from_json.combatants.empty?)
+    assert(!manager_from_json.combatants.empty?)
 
     c1_json = '{"name":"Tester","initiative":12}'
     c2_json = '{"name":"Goblin","initiative":-1}'
     manager_json = manager_from_json.to_json
-    assert_true(manager_json.include?('{"name":"Test",'))
-    assert_true(manager_json.include?(c1_json))
-    assert_true(manager_json.include?(c2_json))
+    assert(manager_json.include?('{"name":"Test",'))
+    assert(manager_json.include?(c1_json))
+    assert(manager_json.include?(c2_json))
   end
 end

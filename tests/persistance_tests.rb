@@ -38,13 +38,13 @@ class TestPersistance < Test::Unit::TestCase
 
   def test_exists
     JSONManager.write_json('test', 'test_exists.json', '{"test":0}')
-    assert_true(JSONManager.exist?('test', 'test_exists.json'))
+    assert(JSONManager.exist?('test', 'test_exists.json'))
     assert_false(JSONManager.exist?('test', '.nonexistant_145497210479102.invalid_file'))
   end
 
   def test_delete
     JSONManager.write_json('test', 'test_delete.json', '{"test":0}')
-    assert_true(JSONManager.exist?('test', 'test_delete.json'))
+    assert(JSONManager.exist?('test', 'test_delete.json'))
     deleted = JSONManager.delete_json('test', 'test_delete.json')
     assert_equal('{"test":0}', deleted)
     assert_false(JSONManager.exist?('test', 'test_delete.json'))
@@ -57,6 +57,6 @@ class TestPersistance < Test::Unit::TestCase
 
     results = JSONManager.search('test', /search_(\w+)/)
     assert_equal(50, results.length)
-    assert_true(((1..50).to_set - results.map(&:to_i).to_set).empty?)
+    assert(((1..50).to_set - results.map(&:to_i).to_set).empty?)
   end
 end
