@@ -6,6 +6,10 @@ class Economy
 
   def initialize(parent_currency_system = CurrencySystem.new)
     @parent_currency_system = parent_currency_system
-    @currency_system = CurrencySystem.new(@parent_currency_system.currency_value)
+    pull_from_parent
+  end
+
+  def pull_from_parent
+    @currency_system = CurrencySystem.new(@parent_currency_system.currency_value.clone)
   end
 end

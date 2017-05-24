@@ -4,6 +4,7 @@ require 'simplecov'
 SimpleCov.start
 
 require_relative '../world/economy/currency_system.rb'
+require_relative '../world/economy/economy.rb'
 
 # Tests CurrencySystem including parsing and custom system definitions
 class TestCurrencySystem < Test::Unit::TestCase
@@ -77,5 +78,38 @@ class TestCurrencySystem < Test::Unit::TestCase
     end
     total = 501_189
     assert_equal([2, 1, 1, 0, 0, 8, 682], odd_system.split_total(total))
+  end
+end
+
+# Tests individual and multiple economies based on the same currency system.
+class TestEconomy < Test::Unit::TestCase
+  def test_individual
+    parent_currency_system = CurrencySystem.new
+    economy = Economy.new(parent_currency_system)
+    assert_not_nil(economy.currency_system)
+    economy.currency_system.change_value(:sp, 11)
+    assert_equal(11, economy.currency_system.value(:sp))
+    assert_equal(10, parent_currency_system.value(:sp))
+    economy.pull_from_parent
+    assert_equal(10, economy.currency_system.value(:sp))
+  end
+
+  def test_multiple
+    parent_currency_system = CurrencySystem.new
+    economy1 = Economy.new(parent_currency_system)
+    economy2 = Economy.new(parent_currency_system)
+
+    economy1.currency_system.change_value(:sp, 11)
+    assert_equal(11, economy1.currency_system.value(:sp))
+    assert_equal(10, economy2.currency_system.value(:sp))
+    assert_equal(10, parent_currency_system.value(:sp))
+    economy1.pull_from_parent
+    assert_equal(10, economy1.currency_system.value(:sp))
+
+    parent_currency_system.change_value(:gp, 111)
+    economy1.pull_from_parent
+    assert_equal(111, economy1.currency_system.value(:gp))
+    assert_equal(100, economy2.currency_system.value(:gp))
+    assert_equal(111, parent_currency_system.value(:gp))
   end
 end
