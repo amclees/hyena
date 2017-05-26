@@ -58,4 +58,9 @@ class TestPersistance < Test::Unit::TestCase
     assert_equal(50, results.length)
     assert(((1..50).to_set - results.map(&:to_i).to_set).empty?)
   end
+
+  def test_filename_validation
+    assert(JSONManager.valid_filename?('test210.test'))
+    refute(JSONManager.valid_filename?('test:210.test'))
+  end
 end
