@@ -1,5 +1,6 @@
 # frozen_string_literal: false
 
+require 'date'
 require_relative '../../logger.rb'
 require_relative '../../json_manager.rb'
 require_relative './calendar.rb'
@@ -18,19 +19,25 @@ module CalendarContainer
     "calendar_#{@calendar_name}.json"
   end
 
+  def self.date_string
+    @calendar.current_date.strftime(@date_format)
+  end
+
   def self.load_calendar(name = @calendar_name)
     @calendar_name = name
     @calendar = JSONManager.exist?('world', filename) ? Calendar.from_json(JSONManager.read_json('world', filename)) : Calendar.new(Date.new)
   end
 
   def self.write_calendar(name = @calendar_name)
+    return unless @calendar
     @calendar_name = name
-    JSONManager.write_json('world', filename + '.bak', JSONManager.delete_json('world', filename))
+    old_json = JSONManager.delete_json('world', filename)
+    JSONManager.write_json('world', filename + '.bak', old_json) if old_json
     JSONManager.write_json('world', filename, @calendar.to_json)
   end
 
-  def calendar?(msg = nil)
-    if calendar
+  def self.calendar?(msg = nil)
+    if @calendar
       true
     else
       msg.respond('There is no open calendar.') if msg && msg&.respond
@@ -40,14 +47,14 @@ module CalendarContainer
 
   command(%i[date today], help_available: true, permission_level: 0) do |msg|
     return unless calendar?(msg)
-    msg.respond("Today is #{@calendar.current_date.strftime(@date_format)}.")
+    msg.respond("Today is #{date_string}.")
     nil
   end
 
   command(%i[advance adv], help_available: false, permission_level: 90) do |msg, arg1|
     return unless calendar?(msg)
     days = arg1 ? arg1.to_i : nil
-    if days
+    if days && days.positive?
       @calendar.advance_time(days)
       msg.respond("Advanced time by #{days} days.")
       write_calendar
@@ -57,8 +64,23 @@ module CalendarContainer
     nil
   end
 
-  command(%i[calendar cal c], help_available: false, permission_level: 95) do |msg, arg1|
-    msg.respond("Calendar IO not supported yet, you input:\n#{arg1}")
+  command(%i[calendar cal c], help_available: false, permission_level: 95) do |msg, arg1, *args|
+    date_str = args && !args.length.zero? ? args.join('-') : ''
+
+    begin
+      date = Date.parse(date_str)
+    rescue ArgumentError
+      date = nil
+    end
+
+    if JSONManager.valid_filename?(arg1) && date
+      load_calendar(arg1)
+      @calendar.current_date = date
+      msg.respond("Created new calendar #{arg1} starting at #{date_string}")
+      write_calendar
+    else
+      msg.respond("Invalid calendar #{date_str}")
+    end
     nil
   end
 

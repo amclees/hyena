@@ -5,7 +5,7 @@ require 'date'
 
 # Calendar keeps tracks of the events of each day and calls handlers as time progresses.
 class Calendar
-  attr_reader :current_date
+  attr_accessor :current_date
 
   def initialize(current_date, event_hash = {}, handlers = [])
     @current_date = current_date

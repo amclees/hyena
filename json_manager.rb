@@ -23,6 +23,7 @@ module JSONManager
   end
 
   def self.read_json(subfolder, filename)
+    return nil unless exist?(subfolder, filename)
     json = nil
     Dir.chdir(@json_folder) do
       Dir.mkdir(subfolder) unless File.directory?(subfolder)
@@ -68,13 +69,15 @@ module JSONManager
     Dir.chdir(@json_folder) do
       Dir.mkdir(subfolder) unless File.directory?(subfolder)
       Dir.chdir(subfolder) do
-        File.open(filename, 'r') do |file|
-          file.each_line do |line|
-            json = '' unless json
-            json = line
+        if File.exist?(filename)
+          File.open(filename, 'r') do |file|
+            file.each_line do |line|
+              json = '' unless json
+              json = line
+            end
           end
+          File.delete(filename)
         end
-        File.delete(filename)
       end
     end
     json
