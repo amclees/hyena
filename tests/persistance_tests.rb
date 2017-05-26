@@ -33,7 +33,6 @@ class TestPersistance < Test::Unit::TestCase
     combat_manager_from_json = CombatManager.from_json(JSONManager.read_json('scenarios', combat_manager.json_filename))
     combat_manager_from_json.next_round
     assert_equal(1, combat_manager_from_json.round)
-    puts combat_manager_from_json.state_s
   end
 
   def test_exists

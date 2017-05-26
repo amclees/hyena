@@ -29,20 +29,15 @@ class CombatantTest < Test::Unit::TestCase
     c2_avg /= tests_amount
     assert((20..25).cover?(c1_avg))
     assert((7..12).cover?(c2_avg))
-    puts "#{c1} avg #{c1_avg}"
-    puts "#{c2} avg #{c2_avg}"
   end
 
   def test_json
-    puts
     c1 = Combatant.from_json('{ "name": "Tester", "initiative": 12 }')
-    puts c1.to_s
     assert_equal(c1.name, 'Tester')
     assert_equal(c1.initiative, 12)
 
     c2 = Combatant.new 'Goblin', -1
     json = c2.to_json
-    puts json
     assert_equal(json, '{"name":"Goblin","initiative":-1}')
   end
 
@@ -73,7 +68,6 @@ class CombatManagerTest < Test::Unit::TestCase
   end
 
   def test_initiative_order
-    puts
     c1 = PureInitiativeCombatant.new 'Goblin', -1
     c2 = PureInitiativeCombatant.new 'Rock', 0
     c3 = PureInitiativeCombatant.new 'Elf', 2
@@ -82,19 +76,16 @@ class CombatManagerTest < Test::Unit::TestCase
     ordered = CombatManager.get_turn_ordered(encounter)
     (0...ordered.length).each do |i|
       combatant = ordered[i]
-      puts combatant.to_s
       assert_equal(eval("c#{4 - i}"), combatant)
       assert_equal(eval("c#{4 - i}.initiative"), combatant.last_roll.floor)
     end
   end
 
   def test_manager_states
-    puts
     c1 = Combatant.new 'Elf', 2
     c2 = Combatant.new 'Best Tester', 25
     combat_manager = CombatManager.new 'Test', [c1, c2], 0
     combat_manager.next_round
-    puts combat_manager.state_s
     assert_equal(1, combat_manager.round)
 
     (2..100).each do |i|
@@ -111,12 +102,10 @@ class CombatManagerTest < Test::Unit::TestCase
   end
 
   def test_manager_json
-    puts
     test_json = '{"name":"Test","combatants":[{"name":"Tester","initiative":12},{"name":"Goblin","initiative":-1}]}'
     manager_from_json = CombatManager.from_json(test_json)
     assert_equal('Test', manager_from_json.name)
     manager_from_json.next_round
-    puts manager_from_json.state_s
     assert_equal(1, manager_from_json.round)
 
     (2..100).each do |i|
