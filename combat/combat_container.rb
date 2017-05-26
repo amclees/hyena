@@ -19,10 +19,6 @@ module Combat
     @scenario_hash
   end
 
-  def self.valid_name?(name)
-    %r{\A[^\/\\\?%\*:|"<>]+\z}.match(name)
-  end
-
   def self.file_regex(user_id)
     %r{\A#{user_id}_([^\/\\\?%\*:|"<>]+).json\z}
   end
@@ -54,7 +50,7 @@ module Combat
       )
       HyenaLogger.log_user(msg.author, 'listed combat command options.')
     elsif action == 'new'
-      if valid_name?(name)
+      if JSONManager.valid_filename?(name)
         old_manager = @scenario_hash[user_id]
         JSONManager.write_json('scenarios', old_manager.json_filename, old_manager.to_json) if old_manager
         new_manager = CombatManager.new name, [], user_id
@@ -71,7 +67,7 @@ module Combat
       if !manager
         msg.respond("#{msg.author.username}, you do not have a combat scenario open.")
         HyenaLogger.log_user(msg.author, 'attempted to rename their nonexistant combat scenario.')
-      elsif valid_name?(name)
+      elsif JSONManager.valid_filename?(name)
         JSONManager.delete_json('scenarios', manager.json_filename)
         manager.name = name
         msg.respond("Successfully renamed scenario to: #{name}")
@@ -82,7 +78,7 @@ module Combat
         HyenaLogger.log_user(msg.author, "attempted and failed to rename their active combat scenario to the invalid name: #{name}")
       end
     elsif %w[open op].include?(action)
-      if valid_name?(name) && JSONManager.exist?('scenarios', "#{user_id}_#{name}.json")
+      if JSONManager.valid_filename?(name) && JSONManager.exist?('scenarios', "#{user_id}_#{name}.json")
         old_manager = @scenario_hash[user_id]
         JSONManager.write_json('scenarios', old_manager.json_filename, old_manager.to_json) if old_manager
         @scenario_hash[user_id] = CombatManager.from_json(JSONManager.read_json('scenarios', "#{user_id}_#{name}.json"))
@@ -136,7 +132,7 @@ module Combat
           args.push(last_arg)
         end
         name = args.join(' ')
-        if valid_name?(name) && initiative =~ /\A-?\d+\z/
+        if JSONManager.valid_filename?(name) && initiative =~ /\A-?\d+\z/
           amount.times do
             manager.combatants.push(Combatant.new(name, initiative.to_i))
           end
@@ -156,7 +152,7 @@ module Combat
       initiative_s = args.shift
       name = args.join(' ')
       if manager
-        if id_s =~ /\A\d+\z/ && initiative_s =~ /\A-?\d+\z/ && valid_name?(name)
+        if id_s =~ /\A\d+\z/ && initiative_s =~ /\A-?\d+\z/ && JSONManager.valid_filename?(name)
           id = id_s.to_i
           popped = manager.pop_combatant(id)
           if popped

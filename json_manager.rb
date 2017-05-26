@@ -2,6 +2,10 @@
 
 # Handles reading and writing JSON data for each module
 module JSONManager
+  def self.valid_filename?(name)
+    %r{\A[^\/\\\?%\*:|"<>]+\z}.match(name)
+  end
+
   def self.init(folder_name)
     Dir.mkdir(folder_name) unless File.directory?(folder_name)
     @json_folder = folder_name
