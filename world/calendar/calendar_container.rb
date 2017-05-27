@@ -13,6 +13,8 @@ module CalendarContainer
   def self.init(bot, config)
     @bot = bot
     @config = config
+
+    load_calendar('main') if JSONManager.exist?('world', 'calendar_main.rb')
   end
 
   def self.filename
@@ -40,7 +42,7 @@ module CalendarContainer
     if @calendar
       true
     else
-      msg.respond('There is no open calendar.') if msg && msg&.respond
+      msg&.respond('There is no open calendar.') if msg
       false
     end
   end
@@ -73,10 +75,10 @@ module CalendarContainer
       date = nil
     end
 
-    if JSONManager.valid_filename?(arg1) && date
+    if JSONManager.valid_filename?(arg1)
       load_calendar(arg1)
-      @calendar.current_date = date
-      msg.respond("Created new calendar #{arg1} starting at #{date_string}")
+      @calendar.current_date = date if date
+      msg.respond(date ? "Created new calendar #{arg1} starting at #{date_string}" : "Opened calendar #{arg1}")
       write_calendar
     else
       msg.respond("Invalid calendar #{date_str}")
