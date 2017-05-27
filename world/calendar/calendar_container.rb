@@ -21,8 +21,8 @@ module CalendarContainer
     "calendar_#{@calendar_name}.json"
   end
 
-  def self.date_string
-    @calendar.current_date.strftime(@date_format)
+  def self.date_string(date = @calendar.current_date)
+    date.strftime(@date_format)
   end
 
   def self.load_calendar(name = @calendar_name)
@@ -47,6 +47,29 @@ module CalendarContainer
     end
   end
 
+  def self.valid_date(date_str)
+    if date_str
+      begin
+        date = Date.parse(date_str)
+      rescue ArgumentError
+        date = nil
+      end
+    else
+      date = nil
+    end
+    date
+  end
+
+  def self.validate(args, msg = nil)
+    args.each do |arg|
+      unless arg
+        msg&.respond('Please try again with valid input as shown by the help command.') if msg
+        return false
+      end
+    end
+    true
+  end
+
   command(%i[date today], help_available: true, permission_level: 0) do |msg|
     return unless calendar?(msg)
     msg.respond("Today is #{date_string}.")
@@ -67,13 +90,9 @@ module CalendarContainer
   end
 
   command(%i[calendar cal c], help_available: false, permission_level: 95) do |msg, arg1, *args|
-    date_str = args && !args.length.zero? ? args.join('-') : ''
+    date_str = args && args.length.positive? ? args.join('-') : ''
 
-    begin
-      date = Date.parse(date_str)
-    rescue ArgumentError
-      date = nil
-    end
+    date = valid_date(date_str)
 
     if JSONManager.valid_filename?(arg1)
       load_calendar(arg1)
@@ -88,7 +107,43 @@ module CalendarContainer
 
   command(%i[event e], help_available: true, permission_level: 0) do |msg, action, *args|
     return unless calendar?(msg)
-    msg.respond("Events not supported yet, you input:\n#{action}\n#{args.join(' ')}")
+    date = args && args.length.positive? ? valid_date(args.shift) : nil
+    # Recalculation of args.length.positive? needed because the above args.shift could bring it to 0.
+    # args[0] check ensures there is text for the event.
+    text = args && args.length.positive? && args[0].strip.length.positive? ? args.join(' ') : nil
+    HyenaLogger.log("#{date} --- #{text}")
+    if %w[help h].include?(action)
+      msg.respond(
+        <<~HELP_TEXT
+          The `event` (or `e`) commands allow you to set events on particular dates to keep track of what has happened in-game.
+          Please be sure to specify a valid date seperated by dashes: YYYY-MM-DD for example, will work.
+            `add <date> <event text>`  (`a`) - Adds an event to the specified date with the specified text.
+            `show <date>` (`s`) - Shows all events for a particular date.
+            `list` (`ls`) - Lists recent dates along with the number of events that occured on each date.
+        HELP_TEXT
+      )
+    elsif %w[add a].include?(action)
+      return unless validate([date, text], msg)
+      @calendar.add_event(date, text)
+      msg.respond('Successfully added event.')
+      write_calendar
+    elsif %w[show view s v].include?(action)
+      return unless validate([date], msg)
+      events = @calendar.get_events(date)
+      if events.empty?
+        msg.respond("There were no events on #{date_string(date)}.")
+      else
+        msg.respond("The events on #{date_string(date)} were:\n```#{events.join("\n")}```")
+      end
+    elsif %w[list ls].include?(action)
+      # TODO: Validate length so it does not exceed Discord limit and silently fail
+      date_texts = @calendar.event_hash.keys.map do |date_key|
+        "#{date_string(date_key)} - Events: #{@calendar.get_events(date_key).length}"
+      end
+      msg.respond(date_texts.join("\n"))
+    else
+      msg.respond('Invalid action, try `event help` to see how to use calendar events.')
+    end
     nil
   end
 end
