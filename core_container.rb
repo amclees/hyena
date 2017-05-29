@@ -22,7 +22,7 @@ module Core
       **Hello!** I, the *hyena*, have come to roll dice and do other things.
       Type `#{bot.prefix}help` to see what I can do for you.
       Type `<number of dice>d<sides>` to roll dice.
-      For example, `1d20`, `4d6`, or `1d100`.`
+      For example, `1d20`, `4d6`, or `1d100`.
     HYENA_INTRO
 
     @bot.message do |msg|
