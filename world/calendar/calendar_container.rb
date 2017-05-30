@@ -111,7 +111,6 @@ module CalendarContainer
     # Recalculation of args.length.positive? needed because the above args.shift could bring it to 0.
     # args[0] check ensures there is text for the event.
     text = args && args.length.positive? && args[0].strip.length.positive? ? args.join(' ') : nil
-    HyenaLogger.log("#{date} --- #{text}")
     if %w[help h].include?(action)
       msg.respond(
         <<~HELP_TEXT
@@ -136,11 +135,13 @@ module CalendarContainer
         msg.respond("The events on #{date_string(date)} were:\n```#{events.join("\n")}```")
       end
     elsif %w[list ls].include?(action)
-      # TODO: Validate length so it does not exceed Discord limit and silently fail
-      date_texts = @calendar.event_hash.keys.map do |date_key|
+      sorted_keys = @calendar.event_hash.keys.sort
+      date_texts = sorted_keys.map do |date_key|
         "#{date_string(date_key)} - Events: #{@calendar.get_events(date_key).length}"
       end
-      msg.respond(date_texts.join("\n"))
+      date_text = ''
+      date_text << date_texts.pop << "\n" while date_text.length < 2000 && !date_texts.empty?
+      msg.respond(date_text)
     else
       msg.respond('Invalid action, try `event help` to see how to use calendar events.')
     end
