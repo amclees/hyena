@@ -56,4 +56,23 @@ module DiceContainer
       end
     end
   end
+
+  command(:ability, description: 'Roll 6 ability scores.') do |msg|
+    HyenaLogger.log_user(msg.author, 'rolled ability scores')
+    response = ''
+    scores = []
+    6.times do |time|
+      rolls = Dice.dx_array(4, 6)
+      rolls = rolls.sort
+      dropped = rolls.shift
+      score = rolls.inject(:+)
+      scores.push(score)
+      response << "Roll \##{time + 1}\n```#{dropped} #{rolls.join(' ')}```\nYour score is #{score}\n\n"
+    end
+    emoji_scores = scores.sort.map do |score|
+      Dice.get_emoji_str(score)
+    end
+    response << "Your scores are #{emoji_scores.join('   ')}"
+    msg.respond(response)
+  end
 end

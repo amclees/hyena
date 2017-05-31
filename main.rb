@@ -42,6 +42,7 @@ puts "Invite URL is #{bot.invite_url}."
 bot.bucket :file_cmd, limit: 3, time_span: 15, delay: 5
 
 DiceContainer.init(bot)
+bot.include! DiceContainer
 
 Combat.init(bot.prefix)
 bot.include! Combat
