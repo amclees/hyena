@@ -69,10 +69,21 @@ module DiceContainer
       scores.push(score)
       response << "Roll \##{time + 1}\n```#{dropped} #{rolls.join(' ')}```\nYour score is #{score}\n\n"
     end
-    emoji_scores = scores.sort.map do |score|
+    scores.sort!
+    emoji_scores = scores.map do |score|
       Dice.get_emoji_str(score)
     end
-    response << "Your scores are #{emoji_scores.join('   ')}"
+    modifiers = scores.map do |score|
+      ((score.to_f - 10.0) / 2.0).floor
+    end
+    emoji_modifiers = modifiers.map do |modifier|
+      Dice.get_emoji_str(modifier)
+    end
+    response << <<~SCORES
+      Your scores are #{emoji_scores.join('   ')}
+      Your modifiers are #{emoji_modifiers.join('   ')}
+      The total of you scores and modifiers are #{scores.inject(:+)} and #{modifiers.inject(:+)} respectively.
+    SCORES
     msg.respond(response)
   end
 end
