@@ -61,6 +61,13 @@ module Dice
     array
   end
 
+  def self.total_with_drop(roll_array, drop, highest = false)
+    return 0 if !roll_array || drop > roll_array.length
+    sorted = roll_array.sort.pop(roll_array.length - drop)
+    sorted.reverse! if highest
+    sorted.inject(:+)
+  end
+
   (2..100).each do |num|
     define_singleton_method("d#{num}x".to_sym) do |amount|
       dx(amount, num)
