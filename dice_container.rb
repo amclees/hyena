@@ -14,11 +14,13 @@ module DiceContainer
       operator = params[2] ? params[2] : '+'
       # If not included, to_i will make nil into 0.
       modifier = params[3].to_i
+      to_drop = params[4].to_i
 
       array_roll = (2..200).cover?(rolls) && (1..1000).cover?(sides)
 
       roll_string = "#{rolls}d#{sides}"
       roll_string += "#{operator}#{modifier}" unless operator == '+' && modifier.zero?
+      roll_string += "d#{to_drop}" unless to_drop.zero?
 
       if (!array_roll && !(operator == '+' || operator == '-')) || (array_roll && (modifier.abs > 100 || (modifier.abs * sides > 1000 && operator[1] == '*')))
         msg.respond("#{msg.author.username}, you can't roll dice with that modifier.")
@@ -32,7 +34,7 @@ module DiceContainer
       elsif array_roll
         apply_all = operator[0] == '*' && operator[1]
         roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
-        roll = roll_array.inject(:+)
+        roll = Dice.total_with_drop(roll_array, to_drop)
         roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
         multiplying = operator[1] == '*'
         roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
