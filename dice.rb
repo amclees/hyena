@@ -68,6 +68,10 @@ module Dice
     sorted.inject(:+)
   end
 
+  def self.avg(roll_array)
+    (roll_array.inject(:+).to_f / roll_array.length).round(3)
+  end
+
   (2..100).each do |num|
     define_singleton_method("d#{num}x".to_sym) do |amount|
       dx(amount, num)

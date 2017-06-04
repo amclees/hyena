@@ -39,7 +39,7 @@ module DiceContainer
         multiplying = operator[1] == '*'
         roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
         max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
-        response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}"
+        response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}\nYour average roll was #{Dice.get_emoji_str(Dice.avg(roll_array))}"
         if response.length <= 2000
           msg.respond(response)
           HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
