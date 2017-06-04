@@ -198,4 +198,17 @@ class TestDice < Test::Unit::TestCase
       assert_equal(roll, Dice.inverted_roll(Dice.modified_roll(roll, modifier, operator), modifier, operator))
     end
   end
+
+  def test_drop
+    array = []
+    total = 0
+    minimum = 10_000
+    1000.times do
+      current = rand(1000)
+      total += current
+      minimum = current if current < minimum
+      array.push(current)
+      assert_equal(total - minimum, Dice.total_with_drop(array, 1))
+    end
+  end
 end
