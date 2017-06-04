@@ -2,7 +2,7 @@
 
 # Serves as a container for dice rolling methods.
 module Dice
-  @dice_regex = /\A\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d(\d+))?\s*\z/i
+  @dice_regex = /\A\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
   @emoji_digits = {
     '0' => ':zero:',
     '1' => ':one:',

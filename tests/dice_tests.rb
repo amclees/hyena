@@ -160,9 +160,11 @@ class TestDice < Test::Unit::TestCase
     captured1 = "2048    \n       d    204   *-  \n\n\n  2".scan(regex)[0]
     captured2 = '2d20+5'.scan(regex)[0]
     captured3 = 'd20'.scan(regex)[0]
+    captured4 = '4d6 *+ 1 d 1'.scan(regex)[0]
     assert_equal(['2048', '204', '*-', '2', nil], captured1)
     assert_equal(['2', '20', '+', '5', nil], captured2)
     assert_equal([nil, '20', nil, nil, nil], captured3)
+    assert_equal(['4', '6', '*+', '1', '1'], captured4)
   end
 
   def test_modifiers
