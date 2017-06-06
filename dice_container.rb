@@ -82,6 +82,7 @@ module DiceContainer
     end
     response << <<~SCORES
       -------------------------------------------------------------------------------------------------------
+
       Your scores are #{emoji_scores.join('   ')}
       Your modifiers are #{emoji_modifiers.join('   ')}
       The total of you scores and modifiers are #{scores.inject(:+)} and #{modifiers.inject(:+)} respectively.
