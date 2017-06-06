@@ -36,7 +36,7 @@ tests.times do
   total += result
   distribution[result] += 1
 end
-average = total / tests
+average = total.to_f / tests.to_f
 puts "Average was #{average}"
 distribution_table = ''
 distribution.keys.sort.each do |key|
