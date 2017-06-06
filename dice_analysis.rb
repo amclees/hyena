@@ -9,22 +9,30 @@ sides = gets.chomp.to_i
 puts 'Rolls per test:'
 rolls = gets.chomp.to_i
 highest = true
+keep = 1
 if rolls.to_i > 1
-  puts 'Highest ("h") or lowest ("l"):'
+  puts 'Keep the highest ("h") or lowest ("l"):'
   highest = gets.chomp.strip == 'h'
+  puts 'How many of the dice should be dropped:'
+  keep = gets.chomp.to_i
 end
 puts 'Number of tests:'
 tests = gets.chomp.to_i
 
 total = 0
 distribution = Hash.new(0)
-initial_value = highest ? 0 : (dice * sides) + 1
 tests.times do
-  result = initial_value
+  results = []
   rolls.times do
-    roll = Dice.dx(dice, sides)
-    result = roll if (roll > result) == highest
+    results.push(Dice.dx(dice, sides))
   end
+  results.sort!
+  if highest
+    results.slice!(0, keep)
+  else
+    results.slice!(results.length - keep, keep)
+  end
+  result = results.inject(:+)
   total += result
   distribution[result] += 1
 end
