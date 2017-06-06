@@ -66,10 +66,9 @@ module DiceContainer
     6.times do |time|
       rolls = Dice.dx_array(4, 6)
       rolls = rolls.sort
-      dropped = rolls.shift
-      score = rolls.inject(:+)
+      score = Dice.total_with_drop(rolls)
       scores.push(score)
-      response << "Roll \##{time + 1}\n```#{dropped} #{rolls.join(' ')}```\nYour score is #{score}\n\n"
+      response << "Roll \##{time + 1}\n```#{rolls.join(' ')}```\nYour score is #{score}\n\n"
     end
     scores.sort!
     emoji_scores = scores.map do |score|
@@ -82,6 +81,7 @@ module DiceContainer
       Dice.get_emoji_str(modifier)
     end
     response << <<~SCORES
+      -------------------------------------------------------------------------------------------------------
       Your scores are #{emoji_scores.join('   ')}
       Your modifiers are #{emoji_modifiers.join('   ')}
       The total of you scores and modifiers are #{scores.inject(:+)} and #{modifiers.inject(:+)} respectively.

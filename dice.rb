@@ -61,7 +61,7 @@ module Dice
     array
   end
 
-  def self.total_with_drop(roll_array, drop, highest = false)
+  def self.total_with_drop(roll_array, drop = 1, highest = false)
     return 0 if !roll_array || drop >= roll_array.length
     sorted = roll_array.sort.pop(roll_array.length - drop)
     sorted.reverse! if highest
