@@ -1,12 +1,21 @@
 # frozen_string_literal: false
 
+require 'json'
 require_relative './dice.rb'
 
 # Dice Command Handler
 module DiceContainer
   extend Discordrb::Commands::CommandContainer
 
+  @ability_score_distribution = nil
+
   def self.init(bot)
+    ability_score_distribution_json = JSONManager.read_json('dice_distributions', 'ability_scores.json')
+    if ability_score_distribution_json
+      @ability_score_distribution = JSON.parse(ability_score_distribution_json)
+      @total_scores = @ability_score_distribution.values.inject(:+)
+    end
+
     bot.message(content: Dice.dice_regex) do |msg|
       params = msg.content.scan(Dice.dice_regex)[0]
       rolls = params[0] ? params[0].to_i : 1
@@ -87,6 +96,15 @@ module DiceContainer
       Your modifiers are #{emoji_modifiers.join('   ')}
       The total of you scores and modifiers are #{scores.inject(:+)} and #{modifiers.inject(:+)} respectively.
     SCORES
+    if @ability_score_distribution
+      same_rolled = @ability_score_distribution[scores.inject(:+).to_s]
+      same_rolled = 0 unless same_rolled
+      response << <<~ANALYSIS
+
+        The average total score is 73.46.
+        Of #{@total_scores.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, '\\1,')} rolls, #{same_rolled}, or #{((same_rolled.to_f / @total_scores.to_f) * 100).round(2)}% would be the same as you rolled.
+      ANALYSIS
+    end
     msg.respond(response)
   end
 end
