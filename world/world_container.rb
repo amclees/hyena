@@ -14,6 +14,7 @@ module WorldContainer
     @config = config
 
     CalendarContainer.init(@bot, @config)
-    @bot.include! CalendarContainer
+
+    @bot.include! WorldContainer
   end
 end

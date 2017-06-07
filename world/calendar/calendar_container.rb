@@ -15,6 +15,8 @@ module CalendarContainer
     @config = config
 
     load_calendar('main') if JSONManager.exist?('world', 'calendar_main.json')
+
+    @bot.include! CalendarContainer
   end
 
   def self.filename

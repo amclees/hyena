@@ -10,9 +10,12 @@ module Combat
   extend Discordrb::Commands::CommandContainer
 
   @prefix = ''
-  def self.init(prefix, scenario_hash = {})
-    @prefix = prefix
+  def self.init(bot, scenario_hash = {})
+    @bot = bot
+    @prefix = bot.prefix
     @scenario_hash = scenario_hash
+
+    @bot.include! Combat
   end
 
   def self.scenario_hash

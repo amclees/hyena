@@ -42,16 +42,12 @@ puts "Invite URL is #{bot.invite_url}."
 bot.bucket :file_cmd, limit: 3, time_span: 15, delay: 5
 
 DiceContainer.init(bot)
-bot.include! DiceContainer
 
-Combat.init(bot.prefix)
-bot.include! Combat
+Combat.init(bot)
 
 WorldContainer.init(bot, CONFIG)
-bot.include! WorldContainer
 
 Core.init(bot, CONFIG)
-bot.include! Core
 
 bot.run :async
 HyenaLogger.log('Bot started.')

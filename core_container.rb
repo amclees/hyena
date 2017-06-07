@@ -41,6 +41,8 @@ module Core
         HyenaLogger.log_user(member, "was warned not to play #{event.game}")
       end
     end
+
+    @bot.include! Core
   end
 
   def self.game_message(member)

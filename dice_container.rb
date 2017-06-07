@@ -11,6 +11,7 @@ module DiceContainer
   @ability_score_distribution = nil
 
   def self.init(bot)
+    @bot = bot
     ability_score_distribution_json = JSONManager.read_json('dice_distributions', 'ability_scores.json')
     if ability_score_distribution_json
       @ability_score_distribution = JSON.parse(ability_score_distribution_json)
@@ -69,6 +70,8 @@ module DiceContainer
         HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
       end
     end
+
+    @bot.include! DiceContainer
   end
 
   command(:ability, description: 'Roll 6 ability scores.') do |msg|
