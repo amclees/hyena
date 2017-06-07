@@ -14,7 +14,8 @@ module Dice
     '7' => ':seven:',
     '8' => ':eight:',
     '9' => ':nine:',
-    '-' => '—'
+    '-' => '—',
+    '.' => ':large_blue_circle:'
   }
 
   def self.dice_regex
