@@ -19,12 +19,12 @@ else
   exit
 end
 
-HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
+HyenaLogger.save_interval = CONFIG['log_save_interval'] if CONFIG.key?('log_save_interval')
 HyenaLogger.debug = CONFIG['debug'] if CONFIG.key?('debug')
 HyenaLogger.date_format = CONFIG['date_format'] if CONFIG.key?('date_format')
 HyenaLogger.date_format_filename = CONFIG['date_format_filename'] if CONFIG.key?('date_format_filename')
 
-admin_ids = CONFIG.key?('log-save-interval') ? CONFIG['admin_ids'] : []
+admin_ids = CONFIG.key?('admin_ids') ? CONFIG['admin_ids'] : []
 prefix = CONFIG.key?('prefix') ? CONFIG['prefix'] : '.'
 
 bot = Discordrb::Commands::CommandBot.new(

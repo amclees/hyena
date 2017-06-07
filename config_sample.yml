@@ -2,7 +2,7 @@
 bot_token: <token for bot>
 client_id: <client id for bot>
 # Log files will be written to the disk every save interval (in seconds).
-log-save-interval: 600
+log_save_interval: 600
 # Debug enables extra logging to console.
 debug: false
 # Date format is used for internal date formatting.
