@@ -34,7 +34,7 @@ bot = Discordrb::Commands::CommandBot.new(
 )
 HyenaLogger.log('Created bot.')
 
-JSONManager.init('data')
+JSONManager.init(CONFIG.key?('data_folder') ? CONFIG['data_folder'] : 'data')
 
 puts "Invite URL is #{bot.invite_url}."
 

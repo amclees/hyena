@@ -11,6 +11,8 @@ date_format: '%Y-%m-%d-%H:%M:%S'
 date_format_filename: '%Y-%m-%d-%H-%M-%S'
 # Prefix is used to indicate a message is a command.
 prefix: '.'
+# All JSON data will be stored in this folder.
+data_folder: 'data'
 # Admins will have permissions for all commands.
 admin_ids:
   - <user id>
