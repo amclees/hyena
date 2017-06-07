@@ -16,23 +16,29 @@ if rolls.to_i > 1
   puts 'How many of the dice should be dropped:'
   keep = gets.chomp.to_i
 end
+puts 'Number of tests per result set:'
+set_size = gets.chomp.to_i
 puts 'Number of tests:'
 tests = gets.chomp.to_i
 
 total = 0
 distribution = Hash.new(0)
 tests.times do
-  results = []
-  rolls.times do
-    results.push(Dice.dx(dice, sides))
+  current_set = []
+  set_size.times do
+    results = []
+    rolls.times do
+      results.push(Dice.dx(dice, sides))
+    end
+    results.sort!
+    if highest
+      results.slice!(0, keep)
+    else
+      results.slice!(results.length - keep, keep)
+    end
+    current_set.push(results.inject(:+))
   end
-  results.sort!
-  if highest
-    results.slice!(0, keep)
-  else
-    results.slice!(results.length - keep, keep)
-  end
-  result = results.inject(:+)
+  result = current_set.inject(:+)
   total += result
   distribution[result] += 1
 end
