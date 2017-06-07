@@ -7,6 +7,7 @@ require_relative './dice.rb'
 module DiceContainer
   extend Discordrb::Commands::CommandContainer
 
+  @dice_regex = nil
   @ability_score_distribution = nil
 
   def self.init(bot)
@@ -16,8 +17,10 @@ module DiceContainer
       @total_scores = @ability_score_distribution.values.inject(:+)
     end
 
-    bot.message(content: Dice.dice_regex) do |msg|
-      params = msg.content.scan(Dice.dice_regex)[0]
+    @dice_regex = /\A\s*#{Regexp.quote(bot.prefix)}\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
+
+    bot.message(content: @dice_regex) do |msg|
+      params = msg.content.scan(@dice_regex)[0]
       rolls = params[0] ? params[0].to_i : 1
       sides = params[1].to_i
       operator = params[2] ? params[2] : '+'

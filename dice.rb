@@ -2,7 +2,6 @@
 
 # Serves as a container for dice rolling methods.
 module Dice
-  @dice_regex = /\A\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
   @emoji_digits = {
     '0' => ':zero:',
     '1' => ':one:',
@@ -17,10 +16,6 @@ module Dice
     '-' => '—',
     '.' => ':large_blue_circle:'
   }
-
-  def self.dice_regex
-    @dice_regex
-  end
 
   def self.modified_roll(roll, modifier, operator)
     operator = operator[1] ? operator[1] : operator[0]
