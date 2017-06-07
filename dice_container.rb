@@ -18,7 +18,7 @@ module DiceContainer
       @total_scores = @ability_score_distribution.values.inject(:+)
     end
 
-    @dice_regex = /\A\s*#{Regexp.quote(bot.prefix)}\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
+    @dice_regex = /\A\s*(?:#{Regexp.quote(bot.prefix)})?\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
 
     bot.message(content: @dice_regex) do |msg|
       params = msg.content.scan(@dice_regex)[0]
