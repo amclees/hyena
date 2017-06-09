@@ -72,7 +72,7 @@ module CalendarContainer
     true
   end
 
-  command(%i[date today], help_available: true, permission_level: 0) do |msg|
+  command(%i[date today], description: 'Displays the current in-game date.', permission_level: 0) do |msg|
     return unless calendar?(msg)
     msg.respond("Today is #{date_string}.")
     nil
@@ -107,7 +107,7 @@ module CalendarContainer
     nil
   end
 
-  command(%i[event e], help_available: true, permission_level: 0) do |msg, action, *args|
+  command(%i[event e], description: 'Allows editing events. Try `event help` for more details.', permission_level: 0) do |msg, action, *args|
     return unless calendar?(msg)
     date = args && args.length.positive? ? valid_date(args.shift) : nil
     # Recalculation of args.length.positive? needed because the above args.shift could bring it to 0.
