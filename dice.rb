@@ -100,4 +100,8 @@ module Dice
     end
     emoji
   end
+
+  def self.get_comma_seperated(number)
+    number.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, '\\1,')
+  end
 end

@@ -33,6 +33,7 @@ module DiceContainer
     if ability_score_distribution_json
       @ability_score_distribution = JSON.parse(ability_score_distribution_json)
       @total_scores = @ability_score_distribution.values.inject(:+)
+      @ability_score_keys_sorted = @ability_score_distribution.keys.map(&:to_i).sort
     end
 
     @dice_regex = /\A\s*(?:#{Regexp.quote(bot.prefix)})?\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
@@ -96,7 +97,13 @@ module DiceContainer
     msg.respond(@dice_description)
   end
 
-  command(:ability, description: 'Roll 6 ability scores.') do |msg|
+  command(
+    :ability,
+    description: <<~ABILITY_SCORE_DESCRIPTION
+      Roll 6 ability scores.
+      Each is a 4d6d1 just as it would be if rolled manually, but all scores will be displayed with modifiers.
+    ABILITY_SCORE_DESCRIPTION
+  ) do |msg|
     HyenaLogger.log_user(msg.author, 'rolled ability scores')
     response = ''
     scores = []
@@ -117,21 +124,31 @@ module DiceContainer
     emoji_modifiers = modifiers.map do |modifier|
       Dice.get_emoji_str(modifier)
     end
+    average = 73.46
+    total_score = scores.inject(:+)
+    total_modifiers = modifiers.inject(:+)
     response << <<~SCORES
       -------------------------------------------------------------------------------------------------------
 
       Your scores are #{emoji_scores.join('   ')}
       Your modifiers are #{emoji_modifiers.join('   ')}
-      The total of you scores and modifiers are #{scores.inject(:+)} and #{modifiers.inject(:+)} respectively.
+      The total of you scores and modifiers are #{total_score} and #{total_modifiers} respectively.
     SCORES
     if @ability_score_distribution
-      same_rolled = @ability_score_distribution[scores.inject(:+).to_s]
-      same_rolled = 0 unless same_rolled
+      total_exceeded = 0
+      @ability_score_keys_sorted.each do |key|
+        break if key >= total_score
+        total_exceeded += @ability_score_distribution[key.to_s]
+      end
+      percentile = ((total_exceeded.to_f / @total_scores) * 100).round(2)
+      descriptor = percentile < 50 ? 'worse' : 'better'
+      percentile = 100 - percentile if percentile < 50
       response << <<~ANALYSIS
 
-        The average total score is 73.46.
-        Of #{@total_scores.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, '\\1,')} rolls, #{same_rolled}, or #{((same_rolled.to_f / @total_scores.to_f) * 100).round(2)}% would be the same as you rolled.
+        You total score is #{((total_score.to_f / average) * 100).round(2)}% of the average (The average total score is #{average}).
+        You rolled #{descriptor} than #{percentile}% of people.
       ANALYSIS
+      response << "\nTypically, you would qualify for rerolling your scores (since they are too low)." if scores.max <= 13 || !total_modifiers.positive?
     end
     msg.respond(response)
   end
