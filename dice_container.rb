@@ -142,7 +142,7 @@ module DiceContainer
       end
       percentile = ((total_exceeded.to_f / @total_scores) * 100).round(2)
       descriptor = percentile < 50 ? 'worse' : 'better'
-      percentile = 100 - percentile if percentile < 50
+      percentile = (100 - percentile).round(2) if percentile < 50
       response << <<~ANALYSIS
 
         You total score is #{((total_score.to_f / average) * 100).round(2)}% of the average (The average total score is #{average}).
