@@ -7,11 +7,6 @@ require_relative './json_manager.rb'
 module Core
   extend Discordrb::Commands::CommandContainer
   @current_game = nil
-  @dice_description = <<~DICE_DESCRIPTION
-    Type in `<amount>d<sides>` to roll dice. For example, `2d6` or `1d20`.
-        You can also use the modifiers `+`, `-`, or `*`. If you put an extra `*` before another modifier it will be applied to each roll (rather than their sum).
-        For example, `1d20 + 5`, `4d8 *- 3`, or `20d6 ** 2`.
-  DICE_DESCRIPTION
   @mimic_hash = {}
 
   def self.init(bot, config)
@@ -86,8 +81,6 @@ module Core
     HyenaLogger.log_user(msg.author, 'asked hyena to introduce itself')
     msg.respond(@hyena_intro)
   end
-
-  command(:xdx, description: @dice_description) {}
 
   command(:exit, help_available: false, permission_level: 100) do |msg|
     HyenaLogger.log_user(msg.author, 'issued command to exit.')

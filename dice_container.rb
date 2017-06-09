@@ -7,6 +7,23 @@ require_relative './dice.rb'
 module DiceContainer
   extend Discordrb::Commands::CommandContainer
 
+  @dice_description = <<~DICE_DESCRIPTION
+    Type in `<amount>d<sides>` to roll dice. For example, `2d6` or `1d20`.
+
+        You can use the modifiers `+`, `-`, or `*`. If you put an extra `*` before another modifier it will be applied to each roll (rather than their sum).
+        For example,
+          `4d6 ** 2` rolls 4 6-sided dice, multiplying each by 2.
+          `2d20 + 5` rolls 2 20-sided dice, then adds 5 to their **sum** (not each die).
+          `2d20 *+ 5` works as above, but adds 5 to **each roll**.
+
+        You can omit the number of dice to roll 1 (e.g. `d20`).
+
+        You can drop the lowest dice from a roll by adding `dX` to the end of the roll, where `X` is the number of dice you would like to drop.
+        For example,
+          `4d6d1` rolls 4 6-sided dice and totals the three highest rolls.
+          `2d20 ** -2 d1` rolls 2 20-sided dice subtracting 2 from each roll, then drops the lowest roll.
+  DICE_DESCRIPTION
+
   @dice_regex = nil
   @ability_score_distribution = nil
 
@@ -72,6 +89,11 @@ module DiceContainer
     end
 
     @bot.include! DiceContainer
+  end
+
+  command(:dice, description: @dice_description) do |msg|
+    HyenaLogger.log_user(msg.author, 'requested dice description')
+    msg.respond(@dice_description)
   end
 
   command(:ability, description: 'Roll 6 ability scores.') do |msg|
