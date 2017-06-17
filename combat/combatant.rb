@@ -45,8 +45,13 @@ class Combatant
   end
 
   def self.from_hash(hash)
-    return Combatant.new hash[:name], hash[:initiative] if hash[:name] && hash[:initiative]
-    return Combatant.new hash['name'], hash['initiative'] if hash['name'] && hash['initiative']
+    name = :name
+    initiative = :initiative
+    [false, true].each do |str|
+      name = name.to_str if str
+      initiative = initiative.to_str if str
+      return Combatant.new hash[name], hash[initiative]
+    end
     nil
   end
 
