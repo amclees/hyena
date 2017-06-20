@@ -26,29 +26,33 @@ class Calendar
     end
   end
 
-  def get_events(date)
+  def get_events(date, id = 0)
     if @event_hash.key?(date)
-      @event_hash[date]
+      @event_hash[date].select { |event_data| event_data['id'] == id }.map { |event_data| event_data['text'] }
     else
       []
     end
   end
 
-  def add_event(date, event)
+  def add_event(date, event, id = 0)
+    event_data = {
+      'id' => id,
+      'text' => event
+    }
     if @event_hash.key?(date)
-      @event_hash[date].push(event)
+      @event_hash[date].push(event_data)
     else
-      @event_hash[date] = [event]
+      @event_hash[date] = [event_data]
     end
   end
 
-  def add_event_today(event)
-    add_event(@current_date, event)
+  def add_event_today(event, id = 0)
+    add_event(@current_date, event, id)
   end
 
-  def add_events(date, events)
+  def add_events(date, events, id = 0)
     events.each do |event|
-      add_event(date, event)
+      add_event(date, event, id)
     end
   end
 
