@@ -28,10 +28,14 @@ class Calendar
 
   def get_events(date, id = 0)
     if @event_hash.key?(date)
-      @event_hash[date].select { |event_data| event_data['id'] == id }.map { |event_data| event_data['text'] }
+      @event_hash[date].select { |event_data| event_data['id'] == id || event_data['id'].zero? }.map { |event_data| event_data['text'] }
     else
       []
     end
+  end
+
+  def get_events_today(id = 0)
+    get_events(@current_date, id)
   end
 
   def add_event(date, event, id = 0)

@@ -109,7 +109,17 @@ module CalendarContainer
 
   command(%i[event e], description: 'Allows editing events. Try `event help` for more details.', permission_level: 0) do |msg, action, *args|
     return unless calendar?(msg)
-    date = args && args.length.positive? ? valid_date(args.shift) : nil
+
+    possible_access_indicator = args && args.length.positive? ? args.pop : nil
+    access_id = possible_access_indicator && (possible_access_indicator.strip == 'p') ? msg.author.id : 0
+
+    args.push(possible_access_indicator) if possible_access_indicator && access_id.zero?
+
+    possible_date = args && args.length.positive? ? args.shift : nil
+    date = possible_date ? valid_date(possible_date) : nil
+
+    args.unshift(possible_date) if possible_date && !date
+
     # Recalculation of args.length.positive? needed because the above args.shift could bring it to 0.
     # args[0] check ensures there is text for the event.
     text = args && args.length.positive? && args[0].strip.length.positive? ? args.join(' ') : nil
@@ -117,20 +127,28 @@ module CalendarContainer
       msg.respond(
         <<~HELP_TEXT
           The `event` (or `e`) commands allow you to set events on particular dates to keep track of what has happened in-game.
-          Please be sure to specify a valid date seperated by dashes: YYYY-MM-DD for example, will work.
-            `add <date> <event text>`  (`a`) - Adds an event to the specified date with the specified text.
-            `show <date>` (`s`) - Shows all events for a particular date.
-            `list` (`ls`) - Lists recent dates along with the number of events that occured on each date.
+          Please be sure to specify a valid date seperated by dashes: YYYY-MM-DD or DD-MM-YYYY for example, will work.
+            `add <date> <event text>`  (`a`) - Adds an event to the specified date with the specified text. Without a date, will add the event today.
+            `show <date>` (`s`) - Shows all events for a particular date. Shows today's events if no valid date is specified.
+            `list` (`ls`) - Lists the most recent dates along with the number of events that occured on each date.
+          If you would like to add or view your own private events, add ` p` the the end of the command.
+          For example, `event add Did all sorts of secret stuff... p` will add the event to the current date and make it so only you can see it.
+          You can then view it by doing `show p`. Be sure not to have the text of your events end in ` p`.
         HELP_TEXT
       )
     elsif %w[add a].include?(action)
-      return unless validate([date, text], msg)
-      @calendar.add_event(date, text)
+      return unless validate([text], msg)
+      if validate([date])
+        @calendar.add_event(date, text, access_id)
+      else
+        @calendar.add_event_today(text, access_id)
+      end
       msg.respond('Successfully added event.')
       write_calendar
     elsif %w[show view s v].include?(action)
-      return unless validate([date], msg)
-      events = @calendar.get_events(date)
+      events = validate([date]) ? @calendar.get_events(date, access_id) : @calendar.get_events_today(access_id)
+      date = @calendar.current_date unless date
+
       if events.empty?
         msg.respond("There were no events on #{date_string(date)}.")
       else
@@ -139,7 +157,7 @@ module CalendarContainer
     elsif %w[list ls].include?(action)
       sorted_keys = @calendar.event_hash.keys.sort
       date_texts = sorted_keys.map do |date_key|
-        "#{date_string(date_key)} - Events: #{@calendar.get_events(date_key).length}"
+        "#{date_string(date_key)} - Visible Events: #{@calendar.get_events(date_key, access_id).length}"
       end
       date_text = ''
       date_text << date_texts.pop << "\n" while date_text.length < 2000 && !date_texts.empty?
