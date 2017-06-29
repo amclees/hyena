@@ -49,10 +49,8 @@ module Dice
   def self.dx_array(amount, sides, modifier = 0, operator = '+')
     return [] if amount.zero? || sides.zero? || amount > 10_000
     array = []
-    (0...amount).each do
-      roll = rand(sides) + 1
-      roll = modified_roll(roll, modifier, operator)
-      array.push(roll)
+    amount.times do
+      array.push(modified_roll(rand(sides) + 1, modifier, operator))
     end
     array
   end
@@ -79,7 +77,7 @@ module Dice
 
   # Returns the number of decimal digits needed to represent the number
   def self.digits(number)
-    return 1 if number.zero?
+    return 1 if !number || number.zero?
     1 + Math.log(number.abs, 10).floor + (number.negative? ? 1 : 0)
   end
 
