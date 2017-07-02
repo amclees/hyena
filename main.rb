@@ -1,14 +1,6 @@
 # frozen_string_literal: false
 
-require 'discordrb'
 require 'yaml'
-require_relative './logger.rb'
-require_relative './core_container.rb'
-require_relative './dice_container.rb'
-require_relative './combat/combat_container.rb'
-require_relative './world/world_container.rb'
-
-HyenaLogger.log('Started running main.')
 
 if File.exist?('config.yml')
   CONFIG = YAML.load_file('config.yml')
@@ -19,7 +11,18 @@ else
   exit
 end
 
-HyenaLogger.save_interval = CONFIG['log_save_interval'] if CONFIG.key?('log_save_interval')
+::RBNACL_LIBSODIUM_GEM_LIB_PATH = CONFIG['libsodium-path'] if CONFIG.key?('libsodium-path')
+require 'discordrb'
+
+require_relative './logger.rb'
+require_relative './core_container.rb'
+require_relative './dice_container.rb'
+require_relative './combat/combat_container.rb'
+require_relative './world/world_container.rb'
+
+HyenaLogger.log('Started running main.')
+
+HyenaLogger.save_interval = CONFIG['log-save-interval'] if CONFIG.key?('log-save-interval')
 HyenaLogger.debug = CONFIG['debug'] if CONFIG.key?('debug')
 HyenaLogger.date_format = CONFIG['date_format'] if CONFIG.key?('date_format')
 HyenaLogger.date_format_filename = CONFIG['date_format_filename'] if CONFIG.key?('date_format_filename')

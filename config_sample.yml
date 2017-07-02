@@ -1,6 +1,8 @@
-# This is a sample file represented the structure of the config YAML file.
+# This is a sample file represented the structure of the config.yml file.
 bot_token: <token for bot>
 client_id: <client id for bot>
+# This path is needed for windows machines to run libsodium for voice.
+libsodium-path: <path of libsodium dll>
 # Log files will be written to the disk every save interval (in seconds).
 log_save_interval: 600
 # Debug enables extra logging to console.
