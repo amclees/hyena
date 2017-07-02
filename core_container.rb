@@ -2,6 +2,7 @@
 
 require_relative './logger.rb'
 require_relative './json_manager.rb'
+require 'open-uri'
 
 # Core is the container for commands not belonging to other modules.
 module Core
@@ -300,6 +301,25 @@ module Core
     volume = arg1.to_f
     return unless volume < 10 && !volume.negative?
     msg.voice.volume = volume
+    nil
+  end
+
+  command(:await_upload, help_available: false, permission_level: 100) do |msg|
+    msg.author.await(:file_upload, {}) do |file_message|
+      next true if file_message.message.content == 'cancel'
+
+      next false if file_message.message.attachments.empty?
+      attachment = file_message.message.attachments[0]
+      next false if /\A.*\.(?:ogg|mp3|m4a)\z/i.match(attachment.filename).nil?
+
+      open("./data/audio/#{attachment.filename}", 'wb') do |file|
+        file << open(attachment.url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
+      end
+
+      file_message.respond('Successfully received file')
+      next true
+    end
+    msg.respond('Waiting for audio upload...')
     nil
   end
 end
