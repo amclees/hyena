@@ -11,6 +11,7 @@ module Core
 
   def self.init(bot, config)
     @bot = bot
+    @voice_bot = nil
     @config = config
 
     @hyena_intro = <<~HYENA_INTRO
@@ -19,6 +20,8 @@ module Core
       Type `<number of dice>d<sides>` to roll dice.
       For example, `1d20`, `4d6`, or `1d100`.
     HYENA_INTRO
+
+    @paused = false
 
     @bot.message do |msg|
       HyenaLogger.log_user(msg.author, "said #{msg.content}")
@@ -61,6 +64,7 @@ module Core
   end
 
   def self.save_and_exit
+    @voice_bot&.destroy
     save
     # Causes offline status to immediately display.
     @bot.invisible
@@ -75,6 +79,16 @@ module Core
       matched.push(filename) if match_data
     end
     matched.sort.reverse
+  end
+
+  def self.track_list
+    matched = []
+    regex = /\A.*\.(?:ogg|mp3|m4a)\z/i
+    Dir.entries('./data/audio').each do |filename|
+      match_data = regex.match(filename)
+      matched.push(filename) if match_data
+    end
+    matched.sort
   end
 
   command(:intro, description: 'Ask hyena to introduce itself.') do |msg|
@@ -214,6 +228,62 @@ module Core
     @mimic_hash[arg1] = @mimic_hash.key?(arg1) ? !@mimic_hash[arg1] : true
     HyenaLogger.log_user(msg.author, "set hyena to#{@mimic_hash[arg1] ? '' : ' not'} mimic id #{arg1}")
     msg.respond("Toggling mimic on #{arg1}")
+    nil
+  end
+
+  command(:voice, help_available: false, permission_level: 100) do |msg, action, channel_name|
+    if action == 'connect'
+      channel = nil
+      server = msg.server.name
+      channel = @bot.find_channel(channel_name, server, type: 2)[0] unless @bot.find_channel(channel_name, server, type: 2).empty?
+      if channel
+        @voice_bot = @bot.voice_connect(channel)
+        msg.respond("Successfully connected to channel #{channel_name}")
+      else
+        msg.respond('Channel not found')
+      end
+    elsif action == 'disconnect'
+      if @voice_bot
+        @voice_bot.destroy
+        msg.respond('Disconnected')
+      else
+        msg.respond('Not connected to a voice channel')
+      end
+    end
+    nil
+  end
+
+  command(:tracks, help_available: false, permission_level: 100) do |msg|
+    msg.respond("```\n#{track_list.join("\n")}\n```")
+    nil
+  end
+
+  command(:play, help_available: false, permission_level: 100) do |msg, arg1|
+    return unless @voice_bot
+    existing_track = track_list.find { |possible_track| possible_track == arg1 }
+    if existing_track
+      msg.voice.play_file("./data/audio/#{existing_track}")
+      msg.respond('Playing now')
+    else
+      msg.respond('That track was not found. Please use the `tracks` command to find valid tracks.')
+    end
+    nil
+  end
+
+  command(:pause, help_available: false, permission_level: 100) do |msg|
+    return unless @voice_bot
+    if @paused
+      msg.voice.continue
+    else
+      msg.voice.pause
+    end
+    @paused = !@paused
+    nil
+  end
+
+  command(:stop, help_available: false, permission_level: 100) do |msg|
+    return unless @voice_bot
+    msg.voice.stop_playing
     nil
   end
 end

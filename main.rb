@@ -12,6 +12,7 @@ else
 end
 
 ::RBNACL_LIBSODIUM_GEM_LIB_PATH = CONFIG['libsodium-path'] if CONFIG.key?('libsodium-path')
+
 require 'discordrb'
 
 require_relative './logger.rb'

@@ -3,3 +3,4 @@ config.yml
 logs
 data
 coverage
+opus.dll
