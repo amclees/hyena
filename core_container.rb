@@ -262,8 +262,8 @@ module Core
     return unless @voice_bot
     existing_track = track_list.find { |possible_track| possible_track == arg1 }
     if existing_track
-      msg.voice.play_file("./data/audio/#{existing_track}")
       msg.respond('Playing now')
+      msg.voice.play_file("./data/audio/#{existing_track}")
     else
       msg.respond('That track was not found. Please use the `tracks` command to find valid tracks.')
     end
@@ -284,6 +284,22 @@ module Core
   command(:stop, help_available: false, permission_level: 100) do |msg|
     return unless @voice_bot
     msg.voice.stop_playing
+    nil
+  end
+
+  command(:skip, help_available: false, permission_level: 100) do |msg, arg1|
+    return unless @voice_bot
+    seconds = arg1.to_i
+    return unless seconds.positive? && seconds < 86_400
+    msg.voice.skip(seconds)
+    nil
+  end
+
+  command(:volume, help_available: false, permission_level: 100) do |msg, arg1|
+    return unless @voice_bot
+    volume = arg1.to_f
+    return unless volume < 10 && !volume.negative?
+    msg.voice.volume = volume
     nil
   end
 end
