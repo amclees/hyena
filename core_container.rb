@@ -301,6 +301,14 @@ module Core
     nil
   end
 
+  command(:stream_time, help_available: false, permission_level: 100) do |msg|
+    return unless @voice_bot
+    stream_time = 0
+    stream_time = @voice_bot.stream_time.round(2) if @voice_bot.stream_time
+    msg.respond("The current stream has been running #{stream_time} seconds.")
+    nil
+  end
+
   command(:volume, help_available: false, permission_level: 100) do |msg, arg1|
     return unless @voice_bot
     volume = arg1.to_f
