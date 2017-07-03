@@ -335,4 +335,11 @@ module Core
     msg.respond('Waiting for audio upload...')
     nil
   end
+
+  command(:play_url, help_available: false, permission_level: 100) do |msg, arg1|
+    return unless @voice_bot
+    msg.respond('Playing now')
+    msg.voice.play_io(open(arg1, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE))
+    nil
+  end
 end
