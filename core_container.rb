@@ -85,6 +85,11 @@ module Core
   def self.track_list
     matched = []
     regex = /\A.*\.(?:ogg|mp3|m4a)\z/i
+
+    Dir.chdir('data') do
+      Dir.mkdir('audio') unless File.directory?('audio')
+    end
+
     Dir.entries('./data/audio').each do |filename|
       match_data = regex.match(filename)
       matched.push(filename) if match_data
