@@ -261,6 +261,7 @@ module Core
 
   command(:tracks, help_available: false, permission_level: 100) do |msg|
     msg.respond("```\n#{track_list.join("\n")}\n```")
+    HyenaLogger.log_user(msg.author, 'listed all available tracks')
     nil
   end
 
@@ -270,6 +271,7 @@ module Core
     if existing_track
       msg.respond('Playing now')
       msg.voice.play_file("./data/audio/#{existing_track}")
+      HyenaLogger.log_user(msg.author, "started playback of #{existing_track}")
     else
       msg.respond('That track was not found. Please use the `tracks` command to find valid tracks.')
     end
@@ -280,8 +282,10 @@ module Core
     return unless @voice_bot
     if @paused
       msg.voice.continue
+      HyenaLogger.log_user(msg.author, 'unpaused the stream')
     else
       msg.voice.pause
+      HyenaLogger.log_user(msg.author, 'paused the stream')
     end
     @paused = !@paused
     nil
@@ -290,6 +294,7 @@ module Core
   command(:stop, help_available: false, permission_level: 100) do |msg|
     return unless @voice_bot
     msg.voice.stop_playing
+    HyenaLogger.log_user(msg.author, 'stopped the current stream')
     nil
   end
 
@@ -297,6 +302,7 @@ module Core
     return unless @voice_bot
     seconds = arg1.to_i
     return unless seconds.positive? && seconds < 86_400
+    HyenaLogger.log_user(msg.author, "skipped #{arg1} seconds in the current stream")
     msg.voice.skip(seconds)
     nil
   end
@@ -305,6 +311,7 @@ module Core
     return unless @voice_bot
     stream_time = 0
     stream_time = @voice_bot.stream_time.round(2) if @voice_bot.stream_time
+    HyenaLogger.log_user(msg.author, 'displayed the current stream time')
     msg.respond("The current stream has been running #{stream_time} seconds.")
     nil
   end
@@ -313,6 +320,7 @@ module Core
     return unless @voice_bot
     volume = arg1.to_f
     return unless volume < 10 && !volume.negative?
+    HyenaLogger.log_user(msg.author, "set playback volume to #{arg1}")
     msg.voice.volume = volume
     nil
   end
@@ -332,12 +340,14 @@ module Core
       file_message.respond('Successfully received file')
       next true
     end
+    HyenaLogger.log_user(msg.author, 'set an await for an audio upload')
     msg.respond('Waiting for audio upload...')
     nil
   end
 
   command(:play_url, help_available: false, permission_level: 100) do |msg, arg1|
     return unless @voice_bot
+    HyenaLogger.log_user(msg.author, "played url: #{arg1}")
     msg.respond('Playing now')
     msg.voice.play_io(open(arg1, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE))
     nil
