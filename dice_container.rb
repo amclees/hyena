@@ -76,45 +76,35 @@ module DiceContainer
     if sides > 1_000_000_000
       msg.respond("#{msg.author.username}, you can't roll dice with that many sides!")
       HyenaLogger.log_user(msg.author, "attempted to roll a #{roll_string} but failed due to too many sided dice.")
-    elsif array_roll && (advantage || disadvantage)
-      apply_all = operator[0] == '*' && operator[1]
-
-      roll_array1 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
-      roll_array2 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
-
-      roll_array = roll_array1.each_with_index.map do |element1, index|
-        (element1 < roll_array2[index]) ^ advantage ? element1 : roll_array2[index]
-      end
-
-      roll = Dice.total_with_drop(roll_array, to_drop)
-      roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
-      multiplying = operator[1] == '*'
-
-      roll_table = 'First rolls'
-      roll_table << Dice.generate_roll_table(roll_array1, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
-
-      roll_table << 'Second rolls'
-      roll_table << Dice.generate_roll_table(roll_array2, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
-
-      roll_table << "#{advantage ? 'Higher' : 'Lower'} rolls"
-      roll_table << Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
-
-      max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
-      response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}\nYour average roll was #{Dice.get_emoji_str(Dice.avg(roll_array))}"
-      if response.length <= 2000
-        msg.respond(response)
-        HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
-      else
-        msg.respond('Your roll table was too big for Discord to display. Please try again with a different roll.')
-        HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}, but the message was over 2000 characters.")
-      end
     elsif array_roll
       apply_all = operator[0] == '*' && operator[1]
-      roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
-      roll = Dice.total_with_drop(roll_array, to_drop)
-      roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
-      multiplying = operator[1] == '*'
-      roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+      if advantage || disadvantage
+        roll_array1 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
+        roll_array2 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
+
+        roll_array = roll_array1.each_with_index.map do |element1, index|
+          (element1 < roll_array2[index]) ^ advantage ? element1 : roll_array2[index]
+        end
+
+        roll = Dice.total_with_drop(roll_array, to_drop)
+        roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
+        multiplying = operator[1] == '*'
+
+        roll_table = 'First rolls'
+        roll_table << Dice.generate_roll_table(roll_array1, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+
+        roll_table << 'Second rolls'
+        roll_table << Dice.generate_roll_table(roll_array2, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+
+        roll_table << "#{advantage ? 'Higher' : 'Lower'} rolls"
+        roll_table << Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+      else
+        roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
+        roll = Dice.total_with_drop(roll_array, to_drop)
+        roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
+        multiplying = operator[1] == '*'
+        roll_table = Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+      end
       max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
       response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}\nYour average roll was #{Dice.get_emoji_str(Dice.avg(roll_array))}"
       if response.length <= 2000

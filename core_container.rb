@@ -204,27 +204,27 @@ module Core
     end
   end
 
-  command(%i[online on], help_available: false, permission_level: 100) do |msg|
-    @bot.online
-    HyenaLogger.log_user(msg.author, 'set hyena status to online')
-    nil
-  end
+  command(%i[set_status ss], help_available: false, permission_level: 100) do |msg, arg1|
+    valid_status = true
 
-  command(:dnd, help_available: false, permission_level: 100) do |msg|
-    @bot.dnd
-    HyenaLogger.log_user(msg.author, 'set hyena status to do not disturb')
-    nil
-  end
+    case arg1
+    when 'online'
+      @bot.online
+    when 'dnd'
+      @bot.dnd
+    when 'invisible'
+      @bot.invisible
+    when 'away'
+      @bot.away
+    else
+      valid_status = false
+    end
 
-  command(:invisible, help_available: false, permission_level: 100) do |msg|
-    @bot.invisible
-    HyenaLogger.log_user(msg.author, 'set hyena status to invisible')
-    nil
-  end
-
-  command(:away, help_available: false, permission_level: 100) do |msg|
-    @bot.away
-    HyenaLogger.log_user(msg.author, 'set hyena status to away')
+    if valid_status
+      HyenaLogger.log_user(msg.author, "set hyena status to #{arg1}")
+    else
+      HyenaLogger.log_user(msg.author, 'tried to set hyena status to an invalid value')
+    end
     nil
   end
 

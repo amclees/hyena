@@ -62,7 +62,7 @@ module Combat
         HyenaLogger.log_user(msg.author, "created new combat scenario called: #{name}")
         JSONManager.write_json('scenarios', new_manager.json_filename, new_manager.to_json)
       else
-        msg.respond("#{msg.author.username}, \"#{name}\" is not a valid name.")
+        msg.respond("\"#{name}\" is not a valid name, so the scenario was not created.")
         HyenaLogger.log_user(msg.author, "attempted and failed to created an improperly named new combat scenario called: #{name}")
       end
     elsif %w[rename mv].include?(action)
@@ -77,7 +77,7 @@ module Combat
         HyenaLogger.log_user(msg.author, "renamed their combat scenario called: #{name}")
         JSONManager.write_json('scenarios', manager.json_filename, manager.to_json)
       else
-        msg.respond("#{msg.author.username}, \"#{name}\" is not a valid name.")
+        msg.respond("\"#{name}\" is not a valid name, so the scenario was not renamed.")
         HyenaLogger.log_user(msg.author, "attempted and failed to rename their active combat scenario to the invalid name: #{name}")
       end
     elsif %w[open op].include?(action)
