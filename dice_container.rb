@@ -22,6 +22,8 @@ module DiceContainer
         For example,
           `4d6d1` rolls 4 6-sided dice and totals the three highest rolls.
           `2d20 *- 2 d1` rolls 2 20-sided dice subtracting 2 from each roll, then drops the lowest roll.
+
+        Add `a` or `d` to the end of the roll for advantage or disadvantage on each individual roll.
   DICE_DESCRIPTION
 
   @dice_regex = nil
@@ -36,7 +38,7 @@ module DiceContainer
       @ability_score_keys_sorted = @ability_score_distribution.keys.map(&:to_i).sort
     end
 
-    @dice_regex = /\A\s*(?:#{Regexp.quote(bot.prefix)})?\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*\z/i
+    @dice_regex = /\A\s*(?:#{Regexp.quote(bot.prefix)})?\s*(\d+)?\s*d\s*(\d+)\s*(?:(\*?[*+-])\s*(\d+))?\s*(?:d\s*(\d+))?\s*([ad])?\s*/i
 
     bot.message(content: @dice_regex) do |msg|
       handle_roll(msg, msg.content)
@@ -54,12 +56,16 @@ module DiceContainer
     # If not included, to_i will make nil into 0.
     modifier = params[3].to_i
     to_drop = params[4].to_i
+    advantage = params[5] && params[5] == 'a'
+    disadvantage = params[5] && params[5] == 'd'
 
     array_roll = (2..200).cover?(rolls) && (1..1000).cover?(sides)
 
     roll_string = "#{rolls}d#{sides}"
     roll_string += "#{operator}#{modifier}" unless operator == '+' && modifier.zero?
     roll_string += "d#{to_drop}" unless to_drop.zero?
+    roll_string += 'a' if advantage
+    roll_string += 'd' if disadvantage
 
     if (!array_roll && !(operator == '+' || operator == '-')) || (array_roll && (modifier.abs > 100 || (modifier.abs * sides > 1000 && operator[1] == '*')))
       msg.respond("#{msg.author.username}, you can't roll dice with that modifier.")
@@ -70,6 +76,38 @@ module DiceContainer
     if sides > 1_000_000_000
       msg.respond("#{msg.author.username}, you can't roll dice with that many sides!")
       HyenaLogger.log_user(msg.author, "attempted to roll a #{roll_string} but failed due to too many sided dice.")
+    elsif array_roll && (advantage || disadvantage)
+      apply_all = operator[0] == '*' && operator[1]
+
+      roll_array1 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
+      roll_array2 = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
+
+      roll_array = roll_array1.each_with_index.map do |element1, index|
+        (element1 < roll_array2[index]) ^ advantage ? element1 : roll_array2[index]
+      end
+
+      roll = Dice.total_with_drop(roll_array, to_drop)
+      roll = Dice.modified_roll(roll, modifier, operator) unless apply_all
+      multiplying = operator[1] == '*'
+
+      roll_table = 'First rolls'
+      roll_table << Dice.generate_roll_table(roll_array1, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+
+      roll_table << 'Second rolls'
+      roll_table << Dice.generate_roll_table(roll_array2, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+
+      roll_table << "#{advantage ? 'Higher' : 'Lower'} rolls"
+      roll_table << Dice.generate_roll_table(roll_array, Dice.modified_roll(sides, modifier, operator), multiplying ? modifier : 1)
+
+      max_message = roll_array.include?(Dice.modified_roll(sides, modifier, operator)) ? "\n\nYou rolled a natural #{Dice.get_emoji_str(sides)} :heart_eyes:" : ''
+      response = "#{roll_table}\n#{msg.author.username}, you rolled a #{Dice.get_emoji_str(roll)} on a #{roll_string}#{max_message}\nYour average roll was #{Dice.get_emoji_str(Dice.avg(roll_array))}"
+      if response.length <= 2000
+        msg.respond(response)
+        HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}")
+      else
+        msg.respond('Your roll table was too big for Discord to display. Please try again with a different roll.')
+        HyenaLogger.log_user(msg.author, "rolled a #{roll} on a #{roll_string}, but the message was over 2000 characters.")
+      end
     elsif array_roll
       apply_all = operator[0] == '*' && operator[1]
       roll_array = Dice.dx_array(rolls, sides, apply_all ? modifier : 0, apply_all ? operator : '+')
