@@ -21,7 +21,7 @@ module DiceContainer
         You can drop the lowest dice from a roll by adding `dX` to the end of the roll, where `X` is the number of dice you would like to drop.
         For example,
           `4d6d1` rolls 4 6-sided dice and totals the three highest rolls.
-          `2d20 ** -2 d1` rolls 2 20-sided dice subtracting 2 from each roll, then drops the lowest roll.
+          `2d20 *- 2 d1` rolls 2 20-sided dice subtracting 2 from each roll, then drops the lowest roll.
   DICE_DESCRIPTION
 
   @dice_regex = nil
