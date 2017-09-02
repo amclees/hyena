@@ -201,4 +201,14 @@ class TestDice < Test::Unit::TestCase
       assert_equal(total - minimum, Dice.total_with_drop(array, 1))
     end
   end
+
+  def test_commas
+    assert_equal('12,984,234', Dice.get_comma_seperated(12_984_234))
+  end
+
+  def test_avg
+    assert_equal(15, Dice.avg([0, 30, 15, 10, 20]))
+    assert_equal(4.5, Dice.avg([2, 7]))
+    assert_equal(3.333, Dice.avg([2.22222222, 4.44444444]))
+  end
 end

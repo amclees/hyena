@@ -40,7 +40,7 @@ class CalendarTest < Test::Unit::TestCase
     calendar.add_events(calendar.current_date, events)
     assert_equal(['Defeated werewolf'], calendar.get_events(Date.new(4016, 5, 11)))
     assert_equal(['Face of Gruumsh completed'], calendar.get_events(Date.new(4016, 2, 5)))
-    assert_equal(['Left Redfoot', 'Reached beach'], calendar.get_events(Date.new(4016, 5, 12)))
+    assert_equal(['Left Redfoot', 'Reached beach'], calendar.get_events_today)
     assert_equal([], calendar.get_events(Date.new(4016, 6, 12)))
   end
 

@@ -50,6 +50,12 @@ class CombatantTest < Test::Unit::TestCase
     hash = c2.to_hash
     assert_equal(hash, name: 'Goblin', initiative: -1)
   end
+
+  def test_str
+    c1 = Combatant.new 'Tester', 12
+    c1_str = c1.to_s
+    assert(c1_str.include?('Tester') && c1_str.include?('12'))
+  end
 end
 
 # Tests combat manager
@@ -120,5 +126,17 @@ class CombatManagerTest < Test::Unit::TestCase
     assert(manager_json.include?('{"name":"Test",'))
     assert(manager_json.include?(c1_json))
     assert(manager_json.include?(c2_json))
+  end
+
+  def test_state_str
+    c1 = Combatant.new 'Elf', 2
+    c2 = Combatant.new 'Best Tester', 25
+    combat_manager = CombatManager.new 'Test', [c1, c2], 0
+
+    state_str = combat_manager.state_s
+    should_include = ['Elf', '2', 'Best Tester', '25', '0']
+    should_include.each do |str|
+      assert(state_str.include?(str))
+    end
   end
 end
