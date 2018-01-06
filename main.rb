@@ -18,6 +18,7 @@ require 'discordrb'
 require_relative './logger.rb'
 require_relative './core_container.rb'
 require_relative './dice_container.rb'
+require_relative './schedule_container.rb'
 require_relative './combat/combat_container.rb'
 require_relative './world/world_container.rb'
 
@@ -46,6 +47,8 @@ HyenaLogger.log("Invite URL is #{bot.invite_url}.")
 bot.bucket :file_cmd, limit: 3, time_span: 15, delay: 5
 
 DiceContainer.init(bot)
+
+ScheduleContainer.init(bot)
 
 Combat.init(bot)
 
