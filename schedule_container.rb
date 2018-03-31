@@ -28,12 +28,12 @@ module ScheduleContainer
           if hours_away
             @works_for_count = 0
             @response_count = 0
-            @suggested_date = DateTime.now + Rational(hours_away, 24)
+            @suggested_date = Time.now + Rational(hours_away, 24)
             msg.respond("Would #{@suggested_date.strftime('%l')} work for everyone?")
           end
         end
       elsif text.include? 'when should we play?'
-        @suggested_date = DateTime.now
+        @suggested_date = Time.now
         @works_for_count = 0
         @response_count = 0
         msg.respond('Why not right now?')

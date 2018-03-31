@@ -82,8 +82,8 @@ class CombatManagerTest < Test::Unit::TestCase
     ordered = CombatManager.get_turn_ordered(encounter)
     (0...ordered.length).each do |i|
       combatant = ordered[i]
-      assert_equal(eval("c#{4 - i}"), combatant)
-      assert_equal(eval("c#{4 - i}.initiative"), combatant.last_roll.floor)
+      assert_equal(eval("c#{4 - i}", nil, __FILE__, __LINE__), combatant)
+      assert_equal(eval("c#{4 - i}.initiative", nil, __FILE__, __LINE__), combatant.last_roll.floor)
     end
   end
 

@@ -81,7 +81,7 @@ module CalendarContainer
   command(%i[advance adv], help_available: false, permission_level: 90) do |msg, arg1|
     return unless calendar?(msg)
     days = arg1 ? arg1.to_i : nil
-    if days && days.positive?
+    if days&.positive?
       @calendar.advance_time(days)
       msg.respond("Advanced time by #{days} days.")
       write_calendar
@@ -92,7 +92,7 @@ module CalendarContainer
   end
 
   command(%i[calendar cal c], help_available: false, permission_level: 95) do |msg, arg1, *args|
-    date_str = args && args.length.positive? ? args.join('-') : ''
+    date_str = args&.length&.positive? ? args.join('-') : ''
 
     date = valid_date(date_str)
 
@@ -110,19 +110,19 @@ module CalendarContainer
   command(%i[event e], description: 'Allows editing events. Try `event help` for more details.', permission_level: 0) do |msg, action, *args|
     return unless calendar?(msg)
 
-    possible_access_indicator = args && args.length.positive? ? args.pop : nil
+    possible_access_indicator = args&.length&.positive? ? args.pop : nil
     access_id = possible_access_indicator && (possible_access_indicator.strip == 'p') ? msg.author.id : 0
 
     args.push(possible_access_indicator) if possible_access_indicator && access_id.zero?
 
-    possible_date = args && args.length.positive? ? args.shift : nil
+    possible_date = args&.length&.positive? ? args.shift : nil
     date = possible_date ? valid_date(possible_date) : nil
 
     args.unshift(possible_date) if possible_date && !date
 
     # Recalculation of args.length.positive? needed because the above args.shift could bring it to 0.
     # args[0] check ensures there is text for the event.
-    text = args && args.length.positive? && args[0].strip.length.positive? ? args.join(' ') : nil
+    text = args&.length&.positive? && args[0].strip.length.positive? ? args.join(' ') : nil
     if %w[help h].include?(action)
       msg.respond(
         <<~HELP_TEXT
@@ -147,7 +147,7 @@ module CalendarContainer
       write_calendar
     elsif %w[show view s v].include?(action)
       events = validate([date]) ? @calendar.get_events(date, access_id) : @calendar.get_events_today(access_id)
-      date = @calendar.current_date unless date
+      date ||= @calendar.current_date
 
       if events.empty?
         msg.respond("There were no events on #{date_string(date)}.")

@@ -193,7 +193,7 @@ module Core
   ) do |msg, arg1|
     logs = list_logs
     log_number = arg1.to_i
-    if log_number && log_number.positive? && log_number <= logs.length
+    if log_number&.positive? && log_number <= logs.length
       log_number -= 1
       filename = logs[log_number]
       msg.respond("Log \##{log_number + 1}")
@@ -333,9 +333,12 @@ module Core
       attachment = file_message.message.attachments[0]
       next false if /\A.*\.(?:ogg|mp3|m4a)\z/i.match(attachment.filename).nil?
 
+      # rubocop:disable Security/Open
+      # open-url redefines open from the Kernel module
       open("./data/audio/#{attachment.filename}", 'wb') do |file|
         file << open(attachment.url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
       end
+      # rubocop:enable Security/Open
 
       file_message.respond('Successfully received file')
       next true
@@ -349,7 +352,9 @@ module Core
     return unless @voice_bot
     HyenaLogger.log_user(msg.author, "played url: #{arg1}")
     msg.respond('Playing now')
+    # rubocop:disable Security/Open
     msg.voice.play_io(open(arg1, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE))
+    # rubocop:enable Security/Open
     nil
   end
 end

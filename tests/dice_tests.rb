@@ -109,10 +109,10 @@ class TestDice < Test::Unit::TestCase
 
   def test_meta_methods_auto
     10_000.times do
-      sides = rand(99) + 2
-      rolls = rand(200) + 1
+      sides = rand((2..100))
+      rolls = rand((1..200))
       expected_range = (rolls..(rolls * sides))
-      value = eval("Dice.d#{sides}x(#{rolls})")
+      value = eval("Dice.d#{sides}x(#{rolls})", nil, __FILE__, __LINE__)
       assert(expected_range.cover?(value))
     end
   end

@@ -30,7 +30,7 @@ module JSONManager
       Dir.chdir(subfolder) do
         File.open(filename, 'r') do |file|
           file.each_line do |line|
-            json = '' unless json
+            json ||= ''
             json = line
           end
         end
@@ -72,7 +72,7 @@ module JSONManager
         if File.exist?(filename)
           File.open(filename, 'r') do |file|
             file.each_line do |line|
-              json = '' unless json
+              json ||= ''
               json = line
             end
           end
