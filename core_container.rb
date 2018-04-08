@@ -115,13 +115,14 @@ module Core
     msg.respond('Saved.')
   end
 
-  command(:playing, help_available: false, permission_level: 100) do |msg, arg1, arg2, arg3|
+  command(:playing, help_available: false, permission_level: 100) do |msg, arg1, *args|
+    arg2 = args.join(' ')
     server = msg.author.respond_to?(:server) ? msg.author.server : nil
     if arg1 == 'on'
       @current_game = arg2 ? arg2 : 'D&D'
       @current_game = 'D&D' if arg2 == 'sil'
       @bot.game = @current_game
-      if server && @current_game == 'D&D' && !(arg2 == 'sil' || arg3)
+      if server && @current_game == 'D&D' && !(arg2 == 'sil')
         msg.respond('@everyone Session starting, get in voice!')
         server.members.each do |member|
           next if member.bot_account?
