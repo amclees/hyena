@@ -122,7 +122,7 @@ module Core
       @current_game = arg2 ? arg2 : 'D&D'
       @current_game = 'D&D' if arg2 == 'sil'
       @bot.game = @current_game
-      if server && @current_game == 'D&D' && !(arg2 == 'sil')
+      if server && @current_game == 'D&D' && arg2 != 'sil'
         msg.respond('@everyone Session starting, get in voice!')
         server.members.each do |member|
           next if member.bot_account?
@@ -334,12 +334,10 @@ module Core
       attachment = file_message.message.attachments[0]
       next false if /\A.*\.(?:ogg|mp3|m4a)\z/i.match(attachment.filename).nil?
 
-      # rubocop:disable Security/Open
       # open-url redefines open from the Kernel module
       open("./data/audio/#{attachment.filename}", 'wb') do |file|
         file << open(attachment.url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
       end
-      # rubocop:enable Security/Open
 
       file_message.respond('Successfully received file')
       next true
@@ -353,9 +351,7 @@ module Core
     return unless @voice_bot
     HyenaLogger.log_user(msg.author, "played url: #{arg1}")
     msg.respond('Playing now')
-    # rubocop:disable Security/Open
     msg.voice.play_io(open(arg1, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE))
-    # rubocop:enable Security/Open
     nil
   end
 end
